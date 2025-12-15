@@ -20,6 +20,14 @@
       >
         Data Gunung
       </router-link>
+
+      <router-link 
+        to="/reservasi" 
+        class="nav-item"
+        :class="{ active: $route.path === '/reservasi' }"
+      >
+        Reservasi
+      </router-link>
       
       <router-link 
         to="/informasi" 
@@ -35,6 +43,14 @@
         :class="{ active: $route.path === '/paket-wisata' }"
       >
         Paket Wisata
+      </router-link>
+
+      <router-link 
+        to="/berita" 
+        class="nav-item"
+        :class="{ active: $route.path === '/berita' }"
+      >
+        Berita & Event
       </router-link>
       
       <router-link 

@@ -4,6 +4,13 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import RegisterData from '../views/RegisterData.vue'
 import DataGunung from '../views/DataGunung.vue'
+import Laporan from '../views/Laporan.vue'
+import DaftarLaporan from '../views/DaftarLaporan.vue'
+import User from '../views/User.vue'
+import Reservasi from '../views/Reservasi.vue'
+import Berita from '../views/Berita.vue'
+import PaketWisata from '../views/PaketWisata.vue'
+import Informasi from '../views/Informasi.vue'
 
 const routes = [
   {
@@ -34,7 +41,43 @@ const routes = [
     path: '/data-gunung',
     name: 'DataGunung',
     component: DataGunung
+  },
+  {
+    path: '/reservasi',
+    name: 'Reservasi',
+    component: Reservasi
+  },
+  {
+    path: '/berita',
+    name: 'Berita',
+    component: Berita
+  },
+  {
+    path: '/paket-wisata',
+    name: 'PaketWisata',
+    component: PaketWisata
+  },
+  {
+    path: '/informasi',
+    name: 'Informasi',
+    component: Informasi
+  },
+  {
+    path: '/laporan',
+    name: 'Laporan',
+    component: DaftarLaporan
+  },
+  {
+    path: '/laporan/buat',
+    name: 'laporan-buat',
+    component: Laporan
+  },
+  {
+    path: '/user',
+    name: 'user',
+    component: User
   }
+
 ]
 
 const router = createRouter({
