@@ -28,7 +28,7 @@
                 type="text"
                 class="form-control custom-input"
                 placeholder="Masukkan Email"
-                v-model="phoneOrEmail"
+                v-model="Email"
                 required
               />
             </div>
@@ -57,20 +57,51 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'RegisterView',
   data() {
     return {
-      phoneOrEmail: ''
+      // Sesuaikan variable dengan kebutuhan API Laravel
+      name: '',
+      email: '',
+      password: '',
+      password_confirmation: '' // Opsional, tapi praktik bagus
     }
   },
   methods: {
-    handleRegister() {
-      console.log('Register:', { phoneOrEmail: this.phoneOrEmail });
-      this.$router.push({name: 'RegisterData', query: { email: this.phoneOrEmail }});
+    async handleRegister() {
+      try {
+        // Kirim data ke endpoint register Laravel
+        const response = await axios.post('http://127.0.0.1:8000/api/register', {
+            name: this.name,
+            email: this.email,
+            password: this.password,
+            password_confirmation: this.password_confirmation
+        });
+
+        console.log('Register Berhasil:', response.data);
+        
+        // Opsional: Langsung simpan token biar user ga perlu login ulang
+        localStorage.setItem('token', response.data.access_token);
+        
+        alert('Registrasi Berhasil! Silakan Login.');
+        this.$router.push('/login');
+
+      } catch (error) {
+        console.error(error);
+        // Tampilkan pesan error dari validasi Laravel (misal: email sudah dipakai)
+        if (error.response && error.response.data.errors) {
+            // Mengambil pesan error pertama
+            const firstError = Object.values(error.response.data.errors)[0][0];
+            alert(firstError); 
+        } else {
+            alert('Terjadi kesalahan saat registrasi.');
+        }
+      }
     },
     goToSignIn() {
-      // Navigasi ke halaman sign in
       this.$router.push('/login');
     }
   }

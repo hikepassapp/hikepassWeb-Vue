@@ -5,18 +5,12 @@
       <div class="col-lg-6 col-md-6 col-12 left-section">
         <div class="form-wrapper">
           <h1 class="sign-in-title">Sign In</h1>
-          
+
           <form @submit.prevent="handleLogin">
             <!-- Email Input -->
             <div class="mb-4">
               <div class="input-group">
-                <input
-                  type="email"
-                  class="form-control custom-input"
-                  placeholder="Email"
-                  v-model="email"
-                  required
-                />
+                <input type="email" class="form-control custom-input" placeholder="Email" v-model="email" required />
                 <span class="input-group-text input-icon">
                   <i class="bi bi-envelope"></i>
                 </span>
@@ -26,17 +20,9 @@
             <!-- Password Input -->
             <div class="mb-4">
               <div class="input-group">
-                <input
-                  :type="showPassword ? 'text' : 'password'"
-                  class="form-control custom-input"
-                  placeholder="Password"
-                  v-model="password"
-                  required
-                />
-                <span 
-                  class="input-group-text input-icon clickable"
-                  @click="togglePassword"
-                >
+                <input :type="showPassword ? 'text' : 'password'" class="form-control custom-input"
+                  placeholder="Password" v-model="password" required />
+                <span class="input-group-text input-icon clickable" @click="togglePassword">
                   <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                 </span>
               </div>
@@ -77,19 +63,44 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'LoginView',
   data() {
     return {
       email: '',
       password: '',
-      showPassword: false
+      showPassword: false,
+      errorMessage: '' // Tambahan untuk pesan error
     }
   },
   methods: {
-    handleLogin() {
-      console.log('Login:', { email: this.email, password: this.password });
-      this.$router.push('/home');
+    // Gunakan async/await agar kode lebih rapi
+    async handleLogin() {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/login', {
+          email: this.email,
+          password: this.password
+        });
+
+        // Simpan Token & User
+        localStorage.setItem('token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+
+        // LOGIC REDIRECT
+        if (response.data.user.role === 'admin') {
+          // Arahkan ke halaman UserView yang baru kamu buat
+          // Pastikan di router/index.js path-nya sesuai
+          this.$router.push('/home');
+        } else {
+          // Customer biasa ke Home
+          this.$router.push('/home');
+        }
+
+      } catch (error) {
+        alert('Login Gagal: Cek email/password');
+      }
     },
     togglePassword() {
       this.showPassword = !this.showPassword;
@@ -251,7 +262,7 @@ export default {
 .btn-signup:hover {
   background-color: #f0f0f0;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Responsive Design */
