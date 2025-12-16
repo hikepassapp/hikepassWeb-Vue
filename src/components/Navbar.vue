@@ -4,7 +4,8 @@
       <h3 class="page-title">{{ pageTitle }}</h3>
       
       <div class="user-section">
-        <span class="user-name">Admin 02</span>
+        <span class="user-name">{{ userName }}</span>
+        
         <div class="user-avatar">
           <i class="bi bi-person-circle"></i>
         </div>
@@ -21,11 +22,35 @@ export default {
       type: String,
       default: 'Dashboard'
     }
+  },
+  data() {
+    return {
+      userName: 'Guest' // Default text jika user belum login/data kosong
+    }
+  },
+  mounted() {
+    // 1. Ambil data string dari LocalStorage
+    const userString = localStorage.getItem('user');
+    
+    // 2. Cek apakah datanya ada
+    if (userString) {
+      try {
+        // 3. Ubah string JSON kembali menjadi Objek
+        const userObject = JSON.parse(userString);
+        
+        // 4. Masukkan nama ke variabel (pastikan key-nya 'name' sesuai database Laravel)
+        this.userName = userObject.name || userObject.nama || 'User'; 
+        
+      } catch (error) {
+        console.error("Gagal membaca data user", error);
+      }
+    }
   }
 }
 </script>
 
 <style scoped>
+/* Style tetap sama seperti sebelumnya */
 .top-navbar {
   background-color: white;
   border-bottom: 1px solid #e0e0e0;

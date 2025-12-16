@@ -86,14 +86,6 @@
               <strong>Email:</strong>
               <span>{{ selectedData.email }}</span>
             </div>
-            <div v-if="activeTab === 'user'" class="info-item">
-              <strong>Kontak:</strong>
-              <span>{{ selectedData.kontak }}</span>
-            </div>
-            <div v-if="activeTab === 'user'" class="info-item">
-              <strong>NIK:</strong>
-              <span>{{ selectedData.nik }}</span>
-            </div>
             <div v-if="activeTab === 'admin'" class="info-item">
               <strong>Posisi:</strong>
               <span>{{ selectedData.posisi }}</span>
@@ -132,18 +124,13 @@ import TableAdmin from '../components/TableAdmin.vue'
 import Pagination from '../components/Pagination.vue'
 import ModalTambahUser from '../components/ModalTambahUser.vue'
 import ModalTambahAdmin from '../components/ModalTambahAdmin.vue'
+import axios from 'axios'; 
 
 export default {
   name: 'UserView',
   components: {
-    Sidebar,
-    Navbar,
-    TabNavigation,
-    TableUser,
-    TableAdmin,
-    Pagination,
-    ModalTambahUser,
-    ModalTambahAdmin
+    Sidebar, Navbar, TabNavigation, TableUser, TableAdmin,
+    Pagination, ModalTambahUser, ModalTambahAdmin
   },
   data() {
     return {
@@ -159,79 +146,29 @@ export default {
         { id: 'user', label: 'User' },
         { id: 'admin', label: 'Admin' }
       ],
-      users: [
-        {
-          id: 1,
-          nama: 'abcd',
-          email: 'abcd@gmail.com',
-          kontak: '081247423835',
-          nik: '320XXXXXXXXXXXXXXX'
-        },
-        {
-          id: 2,
-          nama: 'abcd',
-          email: 'abcd@gmail.com',
-          kontak: '081247423835',
-          nik: '320XXXXXXXXXXXXXXX'
-        }
-      ],
-      admins: [
-        {
-          id: 1,
-          nama: 'abcd',
-          posisi: 'Developer',
-          email: 'abcd@gmail.com',
-          ditambahkanPada: '00/00/0000'
-        },
-        {
-          id: 2,
-          nama: 'abcd',
-          posisi: 'Customer Service',
-          email: 'abcd@gmail.com',
-          ditambahkanPada: '00/00/0000'
-        },
-        {
-          id: 3,
-          nama: 'abcd',
-          posisi: 'Content Creator',
-          email: 'abcd@gmail.com',
-          ditambahkanPada: '00/00/0000'
-        },
-        {
-          id: 4,
-          nama: 'abcd',
-          posisi: 'Administrator',
-          email: 'abcd@gmail.com',
-          ditambahkanPada: '00/00/0000'
-        },
-        {
-          id: 5,
-          nama: 'abcd',
-          posisi: 'Administrator',
-          email: 'abcd@gmail.com',
-          ditambahkanPada: '00/00/0000'
-        }
-      ]
+      // KITA KOSONGKAN DATA DUMMY
+      users: [], 
+      admins: [] 
     }
   },
   computed: {
     sectionTitle() {
       return this.activeTab === 'user' ? 'Daftar Akun User' : 'Daftar Akun Admin';
     },
+    // Filter User Lokal (Pencarian)
     filteredUsers() {
       if (!this.searchQuery) return this.users;
       return this.users.filter(user => 
         user.nama.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        user.kontak.includes(this.searchQuery) ||
-        user.nik.includes(this.searchQuery)
+        user.email.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
+    // Filter Admin Lokal (Pencarian)
     filteredAdmins() {
       if (!this.searchQuery) return this.admins;
       return this.admins.filter(admin => 
         admin.nama.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        admin.posisi.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        (admin.posisi && admin.posisi.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
         admin.email.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
@@ -239,20 +176,56 @@ export default {
       return this.activeTab === 'user' ? this.filteredUsers : this.filteredAdmins;
     },
     totalPages() {
-      return Math.ceil(this.currentData.length / this.itemsPerPage);
+      return Math.ceil(this.currentData.length / this.itemsPerPage) || 1;
     },
     paginatedUsers() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.filteredUsers.slice(start, end);
+      return this.filteredUsers.slice(start, start + this.itemsPerPage);
     },
     paginatedAdmins() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.filteredAdmins.slice(start, end);
+      return this.filteredAdmins.slice(start, start + this.itemsPerPage);
     }
   },
+  // FETCH DATA SAAT HALAMAN DIBUKA
+  mounted() {
+    this.fetchData();
+  },
   methods: {
+    // Fungsi Utama Ambil Data dari API
+    async fetchData() {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      try {
+        // Ambil data customers
+        const resUser = await axios.get('http://127.0.0.1:8000/api/customers', config);
+        // Mapping data Backend -> Format Frontend Anda
+        this.users = resUser.data.map(u => ({
+          id: u.id,
+          nama: u.name, // Di DB 'name', di Vue Anda 'nama'
+          email: u.email
+        }));
+
+        // Ambil data admins
+        const resAdmin = await axios.get('http://127.0.0.1:8000/api/admins', config);
+        this.admins = resAdmin.data.map(a => ({
+          id: a.id,
+          nama: a.name,
+          email: a.email,
+          posisi: a.posisi || 'Administrator',
+          ditambahkanPada: new Date(a.created_at).toLocaleDateString('id-ID') // Format tanggal
+        }));
+
+      } catch (error) {
+        console.error("Gagal ambil data", error);
+        if (error.response && error.response.status === 401) {
+            this.$router.push('/login'); // Token expired balik ke login
+        }
+      }
+    },
+
+    // --- LOGIC LAIN ---
     changeTab(tabId) {
       this.activeTab = tabId;
       this.currentPage = 1;
@@ -271,46 +244,48 @@ export default {
         this.showModalTambahAdmin = true;
       }
     },
-    handleSubmitUser(formData) {
-      // Generate ID baru
-      const newId = this.users.length > 0 ? Math.max(...this.users.map(u => u.id)) + 1 : 1;
-      
-      // Tambah user baru
-      const newUser = {
-        id: newId,
-        nama: formData.nama,
-        email: formData.email,
-        kontak: formData.kontak,
-        nik: formData.nik,
-        tanggalLahir: formData.tanggalLahir,
-        jenisKelamin: formData.jenisKelamin,
-        alamat: formData.alamat
-      };
-      
-      this.users.push(newUser);
-      this.showModalTambahUser = false;
-      alert('User berhasil ditambahkan!');
+    
+    // --- CREATE USER (KE API) ---
+    async handleSubmitUser(formData) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post('http://127.0.0.1:8000/api/users', {
+            name: formData.nama,
+            email: formData.email,
+            password: 'password123', // Default password sementara
+            role: 'customer'
+        }, { headers: { Authorization: `Bearer ${token}` } });
+
+        this.showModalTambahUser = false;
+        alert('User berhasil ditambahkan!');
+        this.fetchData(); // Refresh tabel
+
+      } catch (error) {
+        alert('Gagal menambah user: ' + error.response.data.message);
+      }
     },
-    handleSubmitAdmin(formData) {
-      // Generate ID baru
-      const newId = this.admins.length > 0 ? Math.max(...this.admins.map(a => a.id)) + 1 : 1;
-      
-      // Tambah admin baru
-      const today = new Date();
-      const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-      
-      const newAdmin = {
-        id: newId,
-        nama: formData.email.split('@')[0], // Extract name from email
-        posisi: formData.peran,
-        email: formData.email,
-        ditambahkanPada: formattedDate
-      };
-      
-      this.admins.push(newAdmin);
-      this.showModalTambahAdmin = false;
-      alert('Admin berhasil ditambahkan!');
+
+    // --- CREATE ADMIN (KE API) ---
+    async handleSubmitAdmin(formData) {
+       try {
+        const token = localStorage.getItem('token');
+        console.log("Data yang dikirim:", formData);
+        await axios.post('http://127.0.0.1:8000/api/users', {
+            name: formData.email.split('@')[0], // Atau tambah input nama di modal admin
+            email: formData.email,
+            password: 'password123', 
+            role: 'admin',
+            posisi: formData.peran // Kirim jika di DB ada kolom posisi
+        }, { headers: { Authorization: `Bearer ${token}` } });
+
+        this.showModalTambahAdmin = false;
+        alert('Admin berhasil ditambahkan!');
+        this.fetchData(); // Refresh tabel
+      } catch (error) {
+        alert('Gagal menambah admin');
+      }
     },
+
     viewUserDetail(user) {
       this.selectedData = user;
       this.showDetailModal = true;
@@ -319,16 +294,32 @@ export default {
       this.selectedData = admin;
       this.showDetailModal = true;
     },
-    deleteUser(id) {
+
+    // --- DELETE (KE API) ---
+    async deleteUser(id) {
       if (confirm('Apakah Anda yakin ingin menghapus user ini?')) {
-        this.users = this.users.filter(user => user.id !== id);
-        console.log('Deleted user with id:', id);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`, {
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            this.fetchData(); // Refresh data
+        } catch (error) {
+            alert('Gagal menghapus');
+        }
       }
     },
-    deleteAdmin(id) {
+    async deleteAdmin(id) {
       if (confirm('Apakah Anda yakin ingin menghapus admin ini?')) {
-        this.admins = this.admins.filter(admin => admin.id !== id);
-        console.log('Deleted admin with id:', id);
+         try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`, {
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            this.fetchData(); 
+        } catch (error) {
+            alert('Gagal menghapus');
+        }
       }
     },
     closeDetailModal() {

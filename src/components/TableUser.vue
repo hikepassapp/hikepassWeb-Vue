@@ -7,8 +7,6 @@
             <th>No</th>
             <th>Nama</th>
             <th>Email</th>
-            <th>Kontak</th>
-            <th>NIK</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -17,8 +15,6 @@
             <td>{{ index + 1 }}</td>
             <td>{{ user.nama }}</td>
             <td>{{ user.email }}</td>
-            <td>{{ user.kontak }}</td>
-            <td>{{ user.nik }}</td>
             <td>
               <div class="action-buttons">
                 <button 
@@ -41,7 +37,7 @@
           
           <!-- Empty State -->
           <tr v-if="users.length === 0">
-            <td colspan="6" class="text-center empty-state">
+            <td colspan="4" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
               <p>Belum ada data user</p>
             </td>

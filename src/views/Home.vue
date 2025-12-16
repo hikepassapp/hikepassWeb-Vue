@@ -38,7 +38,7 @@
               label="Jumlah Gunung"
               :value="1"
               year="2025"
-              iconClass="bi bi-people"
+              iconClass="bi bi-triangle"
               iconColor="#3b82f6"
               iconBgColor="#dbeafe"
               badgeColor="#dbeafe"
