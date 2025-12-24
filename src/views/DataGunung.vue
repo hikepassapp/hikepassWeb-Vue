@@ -319,183 +319,153 @@
 </template>
 
 <script>
+// 1. Import Komponen UI
 import Sidebar from '../components/Sidebar.vue'
 import Navbar from '../components/Navbar.vue'
 import MountainCard from '../components/MountainCard.vue'
 import Pagination from '../components/Pagination.vue'
-import axios from 'axios'
+
+// 2. Import Central API Client
+import apiClient from '../api/index.js'
 
 export default {
   name: 'DataGunungView',
   components: {
-    Sidebar,
-    Navbar,
-    MountainCard,
-    Pagination
+    Sidebar, Navbar, MountainCard, Pagination
   },
   data() {
     return {
       searchQuery: '',
       itemsPerPage: 8,
       currentPage: 1,
+      // Status Modal
       showEditModal: false,
       showAddModal: false,
       showDeleteModal: false,
       showFeedbackModal: false,
+      // Data State
       feedbackMessage: '',
       mountainToDelete: null,
       selectedMountain: null,
-      editForm: {
-        name: '',
-        status:'',
-        manager: '',
-        quota:'',
-        location: '',
-        contact: '',
-        price: '',
-        duration: '',
-        pos: '',
-        image: ''
-      },
-      API_URL: 'http://127.0.0.1:8000/api/mountains',
-      mountains: []
+      mountains: [],
+      // Form State
+      editForm: this.getEmptyForm()
     }
   },
   computed: {
     filteredMountains() {
-      if (!this.searchQuery) {
-        return this.mountains;
-      }
-      return this.mountains.filter(mountain => 
-        mountain.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        mountain.location.toLowerCase().includes(this.searchQuery.toLowerCase())
+      const query = this.searchQuery.toLowerCase();
+      if (!query) return this.mountains;
+      return this.mountains.filter(m => 
+        m.name.toLowerCase().includes(query) || m.location.toLowerCase().includes(query)
       );
     },
     totalPages() {
-      return Math.ceil(this.filteredMountains.length / this.itemsPerPage);
+      return Math.ceil(this.filteredMountains.length / this.itemsPerPage) || 1;
     },
     paginatedMountains() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.filteredMountains.slice(start, end);
+      return this.filteredMountains.slice(start, start + this.itemsPerPage);
     }
   },
   mounted() {
-    this.fetchMountains()
+    this.fetchMountains();
   },
   methods: {
-    async fetchMountains() {
-      try {
-        const response = await axios.get(this.API_URL)
-        this.mountains = response.data
-      } catch (error) {
-        console.error('Error fetching mountains:', error)
-        this.feedbackMessage = 'Gagal memuat data gunung'
-        this.showFeedbackModal = true
-      }
-    },
-    changePage(page) {
-      this.currentPage = page;
-    },
-    updateItemsPerPage() {
-      this.currentPage = 1;
-    },
-    addMountain() {
-      this.showAddModal = true;
-    },
-    closeAddModal() {
-      this.showAddModal = false;
-      this.editForm = {
-        name: '',
-        status:'',
-        manager: '',
-        quota: '',
-        location: '',
-        contact: '',
-        price: '',
-        duration: '',
-        pos: '',
-        image: ''
+    // Inisialisasi Form Kosong
+    getEmptyForm() {
+      return {
+        name: '', status: '', manager: '', quota: '',
+        location: '', contact: '', price: '', duration: '',
+        pos: '', image: ''
       };
     },
-    async saveNewMountain() {
+
+    /** * API METHODS (CRUD)
+     */
+    async fetchMountains() {
       try {
-        await axios.post(this.API_URL, this.editForm)
-        await this.fetchMountains()
-        this.closeAddModal()
-        this.feedbackMessage = 'Data gunung berhasil ditambahkan!'
-        this.showFeedbackModal = true
+        const response = await apiClient.get('/mountains');
+        this.mountains = response.data;
       } catch (error) {
-        console.error('Error adding mountain:', error)
-        this.feedbackMessage = 'Gagal menambahkan data gunung'
-        this.showFeedbackModal = true
+        this.handleError(error, 'Gagal memuat data gunung');
       }
     },
+
+    async saveNewMountain() {
+      try {
+        await apiClient.post('/mountains', this.editForm);
+        this.finishAction('Data gunung berhasil ditambahkan!');
+        this.closeAddModal();
+      } catch (error) {
+        this.handleError(error, 'Gagal menambahkan data gunung');
+      }
+    },
+
+    async saveMountain() {
+      if (!this.selectedMountain) return;
+      try {
+        await apiClient.put(`/mountains/${this.selectedMountain.id}`, this.editForm);
+        this.finishAction('Data gunung berhasil diperbarui!');
+        this.closeEditModal();
+      } catch (error) {
+        this.handleError(error, 'Gagal memperbarui data gunung');
+      }
+    },
+
+    async confirmDelete() {
+      if (!this.mountainToDelete) return;
+      try {
+        await apiClient.delete(`/mountains/${this.mountainToDelete.id}`);
+        this.finishAction('Data gunung berhasil dihapus!');
+        this.showDeleteModal = false;
+        this.mountainToDelete = null;
+      } catch (error) {
+        this.handleError(error, 'Gagal menghapus data gunung');
+      }
+    },
+
+    /**
+     * UI & MODAL LOGIC
+     */
+    handleError(error, msg) {
+      console.error(error);
+      if (error.response?.status === 401) {
+        this.$router.push('/login');
+      } else {
+        this.feedbackMessage = msg;
+        this.showFeedbackModal = true;
+      }
+    },
+
+    finishAction(msg) {
+      this.fetchMountains(); // Refresh data
+      this.feedbackMessage = msg;
+      this.showFeedbackModal = true;
+    },
+
+    addMountain() {
+      this.editForm = this.getEmptyForm();
+      this.showAddModal = true;
+    },
+
     editMountain(mountain) {
       this.selectedMountain = mountain;
       this.editForm = { ...mountain };
       this.showEditModal = true;
     },
-    closeEditModal() {
-      this.showEditModal = false;
-      this.selectedMountain = null;
-      this.editForm = {
-        name: '',
-        status:'',
-        manager: '',
-        quota: '',
-        location: '',
-        price: '',
-        duration: '',
-        pos: '',
-        image: ''
-      };
-    },
-    async saveMountain() {
-      if (this.selectedMountain) {
-        try {
-          await axios.put(`${this.API_URL}/${this.selectedMountain.id}`, this.editForm)
-          await this.fetchMountains()
-          this.closeEditModal()
-          this.feedbackMessage = 'Data gunung berhasil diperbarui!'
-          this.showFeedbackModal = true
-        } catch (error) {
-          console.error('Error updating mountain:', error)
-          this.feedbackMessage = 'Gagal memperbarui data gunung'
-          this.showFeedbackModal = true
-        }
-      }
-    },
+
     deleteMountain(mountain) {
       this.mountainToDelete = mountain;
       this.showDeleteModal = true;
     },
-    async confirmDelete() {
-      if (this.mountainToDelete) {
-        try {
-          await axios.delete(`${this.API_URL}/${this.mountainToDelete.id}`)
-          await this.fetchMountains()
-          this.showDeleteModal = false
-          this.mountainToDelete = null
-          this.feedbackMessage = 'Data gunung berhasil dihapus!'
-          this.showFeedbackModal = true
-        } catch (error) {
-          console.error('Error deleting mountain:', error)
-          this.feedbackMessage = 'Gagal menghapus data gunung'
-          this.showFeedbackModal = true
-          this.showDeleteModal = false
-          this.mountainToDelete = null
-        }
-      }
-    },
-    cancelDelete() {
-      this.showDeleteModal = false;
-      this.mountainToDelete = null;
-    },
-    closeFeedbackModal() {
-      this.showFeedbackModal = false;
-      this.feedbackMessage = '';
-    }
+
+    closeAddModal() { this.showAddModal = false; },
+    closeEditModal() { this.showEditModal = false; this.selectedMountain = null; },
+    cancelDelete() { this.showDeleteModal = false; this.mountainToDelete = null; },
+    closeFeedbackModal() { this.showFeedbackModal = false; },
+    changePage(page) { this.currentPage = page; },
+    updateItemsPerPage() { this.currentPage = 1; }
   }
 }
 </script>
