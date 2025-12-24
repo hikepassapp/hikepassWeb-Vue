@@ -116,6 +116,7 @@
 </template>
 
 <script>
+// 1. Import Komponen
 import Sidebar from '../components/Sidebar.vue'
 import Navbar from '../components/Navbar.vue'
 import TabNavigation from '../components/TabNavigation.vue'
@@ -124,7 +125,9 @@ import TableAdmin from '../components/TableAdmin.vue'
 import Pagination from '../components/Pagination.vue'
 import ModalTambahUser from '../components/ModalTambahUser.vue'
 import ModalTambahAdmin from '../components/ModalTambahAdmin.vue'
-import axios from 'axios'; 
+
+// 2. Import API Client (Pastikan path ini benar)
+import apiClient from '../api/index.js'
 
 export default {
   name: 'UserView',
@@ -146,7 +149,6 @@ export default {
         { id: 'user', label: 'User' },
         { id: 'admin', label: 'Admin' }
       ],
-      // KITA KOSONGKAN DATA DUMMY
       users: [], 
       admins: [] 
     }
@@ -155,29 +157,32 @@ export default {
     sectionTitle() {
       return this.activeTab === 'user' ? 'Daftar Akun User' : 'Daftar Akun Admin';
     },
-    // Filter User Lokal (Pencarian)
+    // Filter pencarian User
     filteredUsers() {
-      if (!this.searchQuery) return this.users;
-      return this.users.filter(user => 
-        user.nama.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.searchQuery.toLowerCase())
+      const query = this.searchQuery.toLowerCase();
+      if (!query) return this.users;
+      return this.users.filter(u => 
+        u.nama.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
       );
     },
-    // Filter Admin Lokal (Pencarian)
+    // Filter pencarian Admin
     filteredAdmins() {
-      if (!this.searchQuery) return this.admins;
-      return this.admins.filter(admin => 
-        admin.nama.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        (admin.posisi && admin.posisi.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
-        admin.email.toLowerCase().includes(this.searchQuery.toLowerCase())
+      const query = this.searchQuery.toLowerCase();
+      if (!query) return this.admins;
+      return this.admins.filter(a => 
+        a.nama.toLowerCase().includes(query) || 
+        a.email.toLowerCase().includes(query) ||
+        (a.posisi && a.posisi.toLowerCase().includes(query))
       );
     },
+    // Menentukan data mana yang aktif untuk Pagination
     currentData() {
       return this.activeTab === 'user' ? this.filteredUsers : this.filteredAdmins;
     },
     totalPages() {
       return Math.ceil(this.currentData.length / this.itemsPerPage) || 1;
     },
+    // Kembalikan ke nama variabel asli agar template tidak error
     paginatedUsers() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       return this.filteredUsers.slice(start, start + this.itemsPerPage);
@@ -187,45 +192,97 @@ export default {
       return this.filteredAdmins.slice(start, start + this.itemsPerPage);
     }
   },
-  // FETCH DATA SAAT HALAMAN DIBUKA
   mounted() {
     this.fetchData();
   },
   methods: {
-    // Fungsi Utama Ambil Data dari API
+    // AMBIL DATA DARI BACKEND
     async fetchData() {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
       try {
-        // Ambil data customers
-        const resUser = await axios.get('http://127.0.0.1:8000/api/customers', config);
-        // Mapping data Backend -> Format Frontend Anda
+        const [resUser, resAdmin] = await Promise.all([
+          apiClient.get('/customers'),
+          apiClient.get('/admins')
+        ]);
+
         this.users = resUser.data.map(u => ({
           id: u.id,
-          nama: u.name, // Di DB 'name', di Vue Anda 'nama'
+          nama: u.name,
           email: u.email
         }));
 
-        // Ambil data admins
-        const resAdmin = await axios.get('http://127.0.0.1:8000/api/admins', config);
         this.admins = resAdmin.data.map(a => ({
           id: a.id,
           nama: a.name,
           email: a.email,
           posisi: a.posisi || 'Administrator',
-          ditambahkanPada: new Date(a.created_at).toLocaleDateString('id-ID') // Format tanggal
+          ditambahkanPada: new Date(a.created_at).toLocaleDateString('id-ID')
         }));
-
       } catch (error) {
-        console.error("Gagal ambil data", error);
-        if (error.response && error.response.status === 401) {
-            this.$router.push('/login'); // Token expired balik ke login
-        }
+        this.handleError(error, "Gagal memuat data pengguna");
       }
     },
 
-    // --- LOGIC LAIN ---
+    // TAMBAH USER
+    async handleSubmitUser(formData) {
+      try {
+        await apiClient.post('/users', {
+          name: formData.nama,
+          email: formData.email,
+          password: 'password123',
+          role: 'customer'
+        });
+        this.showModalTambahUser = false;
+        alert('User berhasil ditambahkan!');
+        this.fetchData();
+      } catch (error) {
+        this.handleError(error, "Gagal menambah user");
+      }
+    },
+
+    // TAMBAH ADMIN
+    async handleSubmitAdmin(formData) {
+      try {
+        await apiClient.post('/users', {
+          name: formData.email.split('@')[0],
+          email: formData.email,
+          password: 'password123',
+          role: 'admin',
+          posisi: formData.peran
+        });
+        this.showModalTambahAdmin = false;
+        alert('Admin berhasil ditambahkan!');
+        this.fetchData();
+      } catch (error) {
+        this.handleError(error, "Gagal menambah admin");
+      }
+    },
+
+    // HAPUS USER/ADMIN
+    async deleteUser(id) {
+      this.performDelete(id, "User");
+    },
+    async deleteAdmin(id) {
+      this.performDelete(id, "Admin");
+    },
+    async performDelete(id, label) {
+      if (!confirm(`Apakah Anda yakin ingin menghapus ${label} ini?`)) return;
+      try {
+        await apiClient.delete(`/users/${id}`);
+        this.fetchData();
+      } catch (error) {
+        this.handleError(error, `Gagal menghapus ${label}`);
+      }
+    },
+
+    // UI METHODS
+    handleError(error, msg) {
+      console.error(error);
+      if (error.response?.status === 401) {
+        this.$router.push('/login');
+      } else {
+        alert(msg);
+      }
+    },
     changeTab(tabId) {
       this.activeTab = tabId;
       this.currentPage = 1;
@@ -238,94 +295,11 @@ export default {
       this.currentPage = 1;
     },
     addData() {
-      if (this.activeTab === 'user') {
-        this.showModalTambahUser = true;
-      } else {
-        this.showModalTambahAdmin = true;
-      }
+      this.activeTab === 'user' ? this.showModalTambahUser = true : this.showModalTambahAdmin = true;
     },
-    
-    // --- CREATE USER (KE API) ---
-    async handleSubmitUser(formData) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.post('http://127.0.0.1:8000/api/users', {
-            name: formData.nama,
-            email: formData.email,
-            password: 'password123', // Default password sementara
-            role: 'customer'
-        }, { headers: { Authorization: `Bearer ${token}` } });
-
-        this.showModalTambahUser = false;
-        alert('User berhasil ditambahkan!');
-        this.fetchData(); // Refresh tabel
-
-      } catch (error) {
-        alert('Gagal menambah user: ' + error.response.data.message);
-      }
-    },
-
-    // --- CREATE ADMIN (KE API) ---
-    async handleSubmitAdmin(formData) {
-       try {
-        const token = localStorage.getItem('token');
-        console.log("Data yang dikirim:", formData);
-        await axios.post('http://127.0.0.1:8000/api/users', {
-            name: formData.email.split('@')[0], // Atau tambah input nama di modal admin
-            email: formData.email,
-            password: 'password123', 
-            role: 'admin',
-            posisi: formData.peran // Kirim jika di DB ada kolom posisi
-        }, { headers: { Authorization: `Bearer ${token}` } });
-
-        this.showModalTambahAdmin = false;
-        alert('Admin berhasil ditambahkan!');
-        this.fetchData(); // Refresh tabel
-      } catch (error) {
-        alert('Gagal menambah admin');
-      }
-    },
-
-    viewUserDetail(user) {
-      this.selectedData = user;
-      this.showDetailModal = true;
-    },
-    viewAdminDetail(admin) {
-      this.selectedData = admin;
-      this.showDetailModal = true;
-    },
-
-    // --- DELETE (KE API) ---
-    async deleteUser(id) {
-      if (confirm('Apakah Anda yakin ingin menghapus user ini?')) {
-        try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`, {
-                headers: { Authorization: `Bearer ${token}` } 
-            });
-            this.fetchData(); // Refresh data
-        } catch (error) {
-            alert('Gagal menghapus');
-        }
-      }
-    },
-    async deleteAdmin(id) {
-      if (confirm('Apakah Anda yakin ingin menghapus admin ini?')) {
-         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`, {
-                headers: { Authorization: `Bearer ${token}` } 
-            });
-            this.fetchData(); 
-        } catch (error) {
-            alert('Gagal menghapus');
-        }
-      }
-    },
-    closeDetailModal() {
-      this.showDetailModal = false;
-      this.selectedData = null;
-    }
+    viewUserDetail(user) { this.selectedData = user; this.showDetailModal = true; },
+    viewAdminDetail(admin) { this.selectedData = admin; this.showDetailModal = true; },
+    closeDetailModal() { this.showDetailModal = false; this.selectedData = null; }
   }
 }
 </script>
