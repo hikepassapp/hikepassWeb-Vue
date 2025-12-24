@@ -57,6 +57,7 @@
     />
 
     <ModalAddGunung 
+      ref="modalAddGunung"
       :show="showAddModal"
       @close="closeAddModal"
       @save="saveNewMountain"

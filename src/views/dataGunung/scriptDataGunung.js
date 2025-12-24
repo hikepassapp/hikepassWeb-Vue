@@ -80,18 +80,75 @@ export default {
         },
         closeAddModal() {
             this.showAddModal = false;
+            // Clear any error state in modal
+            this.$refs.modalAddGunung?.clearErrors?.()
         },
         async saveNewMountain(formData) {
             try {
-                await axios.post(this.API_URL, formData)
-                await this.fetchMountains()
-                this.closeAddModal()
-                this.feedbackMessage = 'Data gunung berhasil ditambahkan!'
-                this.showFeedbackModal = true
+                this.$refs.modalAddGunung?.setSubmitting?.(true)
+                
+                // Validate required fields
+                if (!formData.name || !formData.manager || !formData.status || !formData.quota || !formData.location || !formData.contact || !formData.price || !formData.duration || !formData.pos) {
+                    this.feedbackMessage = 'Semua field harus diisi'
+                    this.showFeedbackModal = true
+                    this.$refs.modalAddGunung?.setSubmitting?.(false)
+                    return
+                }
+
+                // Make the API request with better error handling
+                const response = await axios.post(this.API_URL, formData, {
+                    timeout: 5000,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if (response.status === 201 || response.status === 200) {
+                    await this.fetchMountains()
+                    this.closeAddModal()
+                    this.feedbackMessage = 'Data gunung berhasil ditambahkan!'
+                    this.showFeedbackModal = true
+                } else {
+                    throw new Error('Response tidak valid dari server')
+                }
             } catch (error) {
                 console.error('Error adding mountain:', error)
-                this.feedbackMessage = 'Gagal menambahkan data gunung'
+                
+                let errorMessage = 'Gagal menambahkan data gunung'
+                
+                // Handle different error types
+                if (error.response) {
+                    // Server responded with error status
+                    const status = error.response.status
+                    const data = error.response.data
+                    
+                    if (status === 400) {
+                        errorMessage = data.message || 'Data tidak valid. Periksa kembali input Anda'
+                    } else if (status === 401) {
+                        errorMessage = 'Anda tidak terautentikasi. Silakan login kembali'
+                    } else if (status === 403) {
+                        errorMessage = 'Anda tidak memiliki izin untuk menambahkan data'
+                    } else if (status === 409) {
+                        errorMessage = data.message || 'Data gunung sudah terdaftar'
+                    } else if (status === 500) {
+                        errorMessage = 'Terjadi kesalahan pada server'
+                    } else if (status >= 400) {
+                        errorMessage = data.message || `Kesalahan: ${status}`
+                    }
+                } else if (error.request) {
+                    // Request made but no response
+                    errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda'
+                } else if (error.code === 'ECONNABORTED') {
+                    errorMessage = 'Permintaan timeout. Server tidak merespons dalam waktu yang ditentukan'
+                } else if (error.message) {
+                    errorMessage = error.message
+                }
+                
+                this.feedbackMessage = errorMessage
                 this.showFeedbackModal = true
+                this.$refs.modalAddGunung?.setGeneralError?.(errorMessage)
+            } finally {
+                this.$refs.modalAddGunung?.setSubmitting?.(false)
             }
         },
         editMountain(mountain) {
