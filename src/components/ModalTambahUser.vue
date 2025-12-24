@@ -1,114 +1,26 @@
 <template>
   <div v-if="show" class="modal-overlay" @click="closeModal">
-    <div class="modal-container" @click.stop>
-      <!-- Header -->
+    <div class="modal-container" @click.stop style="max-width: 500px;">
       <div class="modal-header">
-        <h3 class="modal-title">Tambah</h3>
-        <button class="btn-close" @click="closeModal">
-          <i class="bi bi-x-lg"></i>
-        </button>
+        <h3 class="modal-title">Tambah User</h3>
+        <button class="btn-close" @click="closeModal"><i class="bi bi-x-lg"></i></button>
       </div>
-      
-      <!-- Body -->
       <div class="modal-body">
         <form @submit.prevent="handleSubmit">
-          <!-- Row 1: Nama & NIK -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="nama" class="form-label">Nama</label>
-              <input
-                id="nama"
-                v-model="formData.nama"
-                type="text"
-                class="form-control"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="nik" class="form-label">NIK</label>
-              <input
-                id="nik"
-                v-model="formData.nik"
-                type="text"
-                class="form-control"
-                maxlength="16"
-                pattern="[0-9]{16}"
-                required
-              />
-            </div>
-          </div>
-          
-          <!-- Row 2: Tanggal Lahir & Jenis Kelamin -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="tanggalLahir" class="form-label">Tanggal Lahir</label>
-              <input
-                id="tanggalLahir"
-                v-model="formData.tanggalLahir"
-                type="date"
-                class="form-control"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="jenisKelamin" class="form-label">Jenis Kelamin</label>
-              <select
-                id="jenisKelamin"
-                v-model="formData.jenisKelamin"
-                class="form-control"
-                required
-              >
-                <option value="">Pilih</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-            </div>
-          </div>
-          
-          <!-- Alamat -->
           <div class="form-group">
-            <label for="alamat" class="form-label">Alamat</label>
-            <textarea
-              id="alamat"
-              v-model="formData.alamat"
-              class="form-control textarea"
-              rows="3"
-              required
-            ></textarea>
+            <label class="form-label">Nama</label>
+            <input v-model="formData.nama" type="text" class="form-control" required />
           </div>
-          
-          <!-- Email -->
           <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <input
-              id="email"
-              v-model="formData.email"
-              type="email"
-              class="form-control"
-              required
-            />
+            <label class="form-label">Email</label>
+            <input v-model="formData.email" type="email" class="form-control" required />
           </div>
-          
-          <!-- Kontak -->
           <div class="form-group">
-            <label for="kontak" class="form-label">Kontak</label>
-            <input
-              id="kontak"
-              v-model="formData.kontak"
-              type="tel"
-              class="form-control"
-              pattern="[0-9]{10,15}"
-              required
-            />
+            <label class="form-label">Password</label>
+            <input v-model="formData.password" type="password" class="form-control" required minlength="8" />
           </div>
-          
-          <!-- Submit Button -->
           <div class="modal-footer">
-            <button type="submit" class="btn-submit">
-              Simpan
-            </button>
+            <button type="submit" class="btn-submit">Simpan</button>
           </div>
         </form>
       </div>
@@ -129,12 +41,8 @@ export default {
     return {
       formData: {
         nama: '',
-        nik: '',
-        tanggalLahir: '',
-        jenisKelamin: '',
-        alamat: '',
         email: '',
-        kontak: ''
+        password: ''
       }
     }
   },
@@ -150,12 +58,8 @@ export default {
     resetForm() {
       this.formData = {
         nama: '',
-        nik: '',
-        tanggalLahir: '',
-        jenisKelamin: '',
-        alamat: '',
         email: '',
-        kontak: ''
+        password: ''
       };
     }
   },

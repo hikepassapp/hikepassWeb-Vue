@@ -1,76 +1,34 @@
 <template>
   <div v-if="show" class="modal-overlay" @click="closeModal">
-    <div class="modal-container" @click.stop>
-      <!-- Header -->
+    <div class="modal-container" @click.stop style="max-width: 500px;">
       <div class="modal-header">
-        <h3 class="modal-title">Tambah</h3>
-        <button class="btn-close" @click="closeModal">
-          <i class="bi bi-x-lg"></i>
-        </button>
+        <h3 class="modal-title">Tambah Admin</h3>
+        <button class="btn-close" @click="closeModal"><i class="bi bi-x-lg"></i></button>
       </div>
-      
-      <!-- Body -->
       <div class="modal-body">
         <form @submit.prevent="handleSubmit">
-          <!-- Email -->
           <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <input
-              id="email"
-              v-model="formData.email"
-              type="email"
-              class="form-control"
-              required
-            />
+            <label class="form-label">Nama</label>
+            <input v-model="formData.nama" type="text" class="form-control" required />
           </div>
-          
-          <!-- Peran -->
           <div class="form-group">
-            <label class="form-label">Peran</label>
-            <p class="peran-info">
-              Untuk info mengenai peran akun selengkapnya dapat dilihat 
-              <a href="#" class="link-disini">Disini</a>.
-            </p>
-            
-            <div class="radio-group">
-              <label class="radio-label">
-                <input
-                  type="radio"
-                  v-model="formData.peran"
-                  value="Administrator"
-                  class="radio-input"
-                  required
-                />
-                <span class="radio-text">Administrator</span>
-              </label>
-              
-              <label class="radio-label">
-                <input
-                  type="radio"
-                  v-model="formData.peran"
-                  value="Owner"
-                  class="radio-input"
-                />
-                <span class="radio-text">Owner</span>
-              </label>
-              
-              <label class="radio-label">
-                <input
-                  type="radio"
-                  v-model="formData.peran"
-                  value="Developer"
-                  class="radio-input"
-                />
-                <span class="radio-text">Developer</span>
-              </label>
-            </div>
+            <label class="form-label">Email</label>
+            <input v-model="formData.email" type="email" class="form-control" required />
           </div>
-          
-          <!-- Submit Button -->
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input v-model="formData.password" type="password" class="form-control" required minlength="8" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Posisi</label>
+            <select v-model="formData.posisi" class="form-control" required>
+              <option value="Administrator">Administrator</option>
+              <option value="Owner">Owner</option>
+              <option value="Developer">Developer</option>
+            </select>
+          </div>
           <div class="modal-footer">
-            <button type="submit" class="btn-submit">
-              Simpan
-            </button>
+            <button type="submit" class="btn-submit">Simpan</button>
           </div>
         </form>
       </div>
@@ -90,7 +48,9 @@ export default {
   data() {
     return {
       formData: {
+        nama: '',
         email: '',
+        password: '',
         peran: 'Administrator'
       }
     }
@@ -106,7 +66,9 @@ export default {
     },
     resetForm() {
       this.formData = {
+        nama: '',
         email: '',
+        password: '',
         peran: 'Administrator'
       };
     }

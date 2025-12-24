@@ -1,18 +1,14 @@
 <template>
   <div class="user-page">
     <Sidebar />
-    
+
     <div class="main-content">
       <Navbar pageTitle="User" />
-      
+
       <div class="content-wrapper">
         <!-- Tab Navigation -->
-        <TabNavigation 
-          :tabs="tabs"
-          :activeTab="activeTab"
-          @change-tab="changeTab"
-        />
-        
+        <TabNavigation :tabs="tabs" :activeTab="activeTab" @change-tab="changeTab" />
+
         <!-- Section Title and Add Button -->
         <div class="section-header">
           <h2 class="section-title">{{ sectionTitle }}</h2>
@@ -20,7 +16,7 @@
             + Tambah Data
           </button>
         </div>
-        
+
         <!-- Filter Section -->
         <div class="filter-section">
           <div class="show-entries">
@@ -33,42 +29,25 @@
             </select>
             <span>Data</span>
           </div>
-          
+
           <div class="search-box">
             <span>Search:</span>
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              class="form-control"
-              placeholder="Cari..."
-            />
+            <input type="text" v-model="searchQuery" class="form-control" placeholder="Cari..." />
           </div>
         </div>
-        
+
         <!-- Table Content -->
-        <TableUser 
-          v-if="activeTab === 'user'"
-          :users="paginatedUsers"
-          @view-detail="viewUserDetail"
-          @delete-user="deleteUser"
-        />
-        
-        <TableAdmin 
-          v-if="activeTab === 'admin'"
-          :admins="paginatedAdmins"
-          @view-detail="viewAdminDetail"
-          @delete-admin="deleteAdmin"
-        />
-        
+        <TableUser v-if="activeTab === 'user'" :users="paginatedUsers" @view-detail="viewUserDetail"
+          @delete-user="deleteUser" />
+
+        <TableAdmin v-if="activeTab === 'admin'" :admins="paginatedAdmins" @view-detail="viewAdminDetail"
+          @delete-admin="deleteAdmin" />
+
         <!-- Pagination -->
-        <Pagination 
-          :currentPage="currentPage"
-          :totalPages="totalPages"
-          @page-change="changePage"
-        />
+        <Pagination :currentPage="currentPage" :totalPages="totalPages" @page-change="changePage" />
       </div>
     </div>
-    
+
     <!-- Modal for User Detail -->
     <div v-if="showDetailModal" class="modal-overlay" @click="closeDetailModal">
       <div class="modal-detail" @click.stop>
@@ -96,22 +75,37 @@
             </div>
           </div>
         </div>
+        <button class="btn-edit-inline" @click="triggerEditFromDetail">
+          <i class="bi bi-pencil-square"></i> Edit Data
+        </button>
       </div>
     </div>
-    
+
+    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+      <div class="modal-detail modal-delete" @click.stop>
+        <div class="delete-icon">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h3 class="modal-title text-center">Konfirmasi Hapus</h3>
+        <p class="text-center">
+          Apakah Anda yakin ingin menghapus {{ itemToDelete.label }}
+          <strong>{{ itemToDelete.name }}</strong>? Tindakan ini tidak dapat dibatalkan.
+        </p>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="closeDeleteModal">Batal</button>
+          <button class="btn-confirm-delete" @click="confirmDelete">Hapus Sekarang</button>
+        </div>
+      </div>
+    </div>
+
+    <ModalEditUser v-if="showModalEditUser" :show="showModalEditUser" :userData="editFormData"
+      @close="showModalEditUser = false" @submit="handleUpdateUser" />
+
     <!-- Modal Tambah User -->
-    <ModalTambahUser 
-      :show="showModalTambahUser"
-      @close="showModalTambahUser = false"
-      @submit="handleSubmitUser"
-    />
-    
+    <ModalTambahUser :show="showModalTambahUser" @close="showModalTambahUser = false" @submit="handleSubmitUser" />
+
     <!-- Modal Tambah Admin -->
-    <ModalTambahAdmin 
-      :show="showModalTambahAdmin"
-      @close="showModalTambahAdmin = false"
-      @submit="handleSubmitAdmin"
-    />
+    <ModalTambahAdmin :show="showModalTambahAdmin" @close="showModalTambahAdmin = false" @submit="handleSubmitAdmin" />
   </div>
 </template>
 
@@ -144,13 +138,18 @@ export default {
       showDetailModal: false,
       showModalTambahUser: false,
       showModalTambahAdmin: false,
+      showModalEditUser: false,
+      showModalEditAdmin: false,
+      editFormData: null,
+      showDeleteModal: false, // State baru
+      itemToDelete: { id: null, label: '', name: '' },
       selectedData: null,
       tabs: [
         { id: 'user', label: 'User' },
         { id: 'admin', label: 'Admin' }
       ],
-      users: [], 
-      admins: [] 
+      users: [],
+      admins: []
     }
   },
   computed: {
@@ -161,7 +160,7 @@ export default {
     filteredUsers() {
       const query = this.searchQuery.toLowerCase();
       if (!query) return this.users;
-      return this.users.filter(u => 
+      return this.users.filter(u =>
         u.nama.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
       );
     },
@@ -169,8 +168,8 @@ export default {
     filteredAdmins() {
       const query = this.searchQuery.toLowerCase();
       if (!query) return this.admins;
-      return this.admins.filter(a => 
-        a.nama.toLowerCase().includes(query) || 
+      return this.admins.filter(a =>
+        a.nama.toLowerCase().includes(query) ||
         a.email.toLowerCase().includes(query) ||
         (a.posisi && a.posisi.toLowerCase().includes(query))
       );
@@ -226,9 +225,9 @@ export default {
     async handleSubmitUser(formData) {
       try {
         await apiClient.post('/users', {
-          name: formData.nama,
+          name: formData.nama, // Mapping 'nama' ke kolom 'name' di DB
           email: formData.email,
-          password: 'password123',
+          password: formData.password, // Password default
           role: 'customer'
         });
         this.showModalTambahUser = false;
@@ -243,11 +242,11 @@ export default {
     async handleSubmitAdmin(formData) {
       try {
         await apiClient.post('/users', {
-          name: formData.email.split('@')[0],
+          name: formData.nama,
           email: formData.email,
-          password: 'password123',
-          role: 'admin',
-          posisi: formData.peran
+          posisi: formData.posisi,
+          password: formData.password,
+          role: 'admin'
         });
         this.showModalTambahAdmin = false;
         alert('Admin berhasil ditambahkan!');
@@ -257,21 +256,74 @@ export default {
       }
     },
 
-    // HAPUS USER/ADMIN
-    async deleteUser(id) {
-      this.performDelete(id, "User");
+    triggerEditFromDetail() {
+      // Salin data agar tidak terjadi reaktivitas langsung (isolated copy)
+      this.editFormData = { ...this.selectedData };
+
+      // Tutup modal detail agar tidak menumpuk
+      this.showDetailModal = false;
+
+      // Buka modal edit sesuai konteks tab
+      if (this.activeTab === 'user') {
+        this.showModalEditUser = true;
+      } else {
+        this.showModalEditAdmin = true;
+      }
     },
-    async deleteAdmin(id) {
-      this.performDelete(id, "Admin");
-    },
-    async performDelete(id, label) {
-      if (!confirm(`Apakah Anda yakin ingin menghapus ${label} ini?`)) return;
+
+    // Fungsi Update ke Backend (Laravel)
+    async handleUpdateUser(updatedData) {
       try {
-        await apiClient.delete(`/users/${id}`);
+        await apiClient.put(`/users/${updatedData.id}`, {
+          name: updatedData.nama,
+          email: updatedData.email,
+          posisi: updatedData.posisi,
+        });
+
+        this.showModalEditUser = false;
+        this.showModalEditAdmin = false;
+        alert('Data berhasil diperbarui!');
         this.fetchData();
       } catch (error) {
-        this.handleError(error, `Gagal menghapus ${label}`);
+        this.handleError(error, "Gagal memperbarui data");
       }
+    },
+
+    // HAPUS USER/ADMIN
+    // Trigger Modal Hapus User
+    deleteUser(user) {
+      this.itemToDelete = {
+        id: user.id,
+        label: 'User',
+        name: user.nama
+      };
+      this.showDeleteModal = true;
+    },
+
+    // Trigger Modal Hapus Admin
+    deleteAdmin(admin) {
+      this.itemToDelete = {
+        id: admin.id,
+        label: 'Admin',
+        name: admin.nama
+      };
+      this.showDeleteModal = true;
+    },
+
+    // Fungsi Eksekusi Hapus (Panggil API)
+    async confirmDelete() {
+      try {
+        await apiClient.delete(`/users/${this.itemToDelete.id}`);
+        this.showDeleteModal = false;
+        this.fetchData(); // Refresh tabel
+      } catch (error) {
+        this.handleError(error, `Gagal menghapus ${this.itemToDelete.label}`);
+      }
+    },
+
+    closeDeleteModal() {
+      this.showDeleteModal = false;
+      this.itemToDelete = { id: null, label: '', name: '' };
     },
 
     // UI METHODS
@@ -497,26 +549,26 @@ export default {
   .main-content {
     margin-left: 0;
   }
-  
+
   .content-wrapper {
     padding: 1.5rem;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .filter-section {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .search-box .form-control {
     width: 100%;
   }
-  
+
   .modal-detail {
     padding: 1.5rem;
   }
@@ -526,9 +578,93 @@ export default {
   .content-wrapper {
     padding: 1rem;
   }
-  
+
   .section-title {
     font-size: 1.3rem;
   }
+}
+
+/* Tambahkan ke style scoped Anda */
+
+.modal-delete {
+  max-width: 400px;
+  text-align: center;
+}
+
+.delete-icon {
+  font-size: 3.5rem;
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-cancel {
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #d5d5d5;
+}
+
+.btn-confirm-delete {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm-delete:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.modal-header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-right: 3rem;
+  /* Memberi ruang untuk tombol close */
+}
+
+.btn-edit-inline {
+  background-color: #f39c12;
+  /* Warna Oranye */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.3s;
+}
+
+.btn-edit-inline:hover {
+  background-color: #e67e22;
 }
 </style>
