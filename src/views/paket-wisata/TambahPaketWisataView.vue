@@ -1,10 +1,10 @@
 <template>
   <div class="form-wisata-page">
     <Sidebar />
-
+    
     <div class="main-content">
       <Navbar pageTitle="Tambah Paket Wisata" />
-
+      
       <div class="content-wrapper">
         <!-- Back Button -->
         <button @click="goBack" class="btn-back">
@@ -15,18 +15,18 @@
         <!-- Form Container -->
         <div class="form-container">
           <h2 class="form-title">Tambah Paket Wisata Baru</h2>
-
+          
           <form @submit.prevent="handleSubmit">
             <!-- Image Upload -->
             <div class="form-group image-upload-group">
               <label class="form-label">Gambar Paket</label>
-              <div
+              <div 
                 class="image-upload-area"
                 @click="$refs.fileInput.click()"
                 @dragover.prevent="isDragging = true"
                 @dragleave="isDragging = false"
                 @drop.prevent="handleDrop"
-                :class="{ dragging: isDragging }"
+                :class="{ 'dragging': isDragging }"
               >
                 <div v-if="!imagePreview" class="upload-placeholder">
                   <i class="bi bi-cloud-upload"></i>
@@ -35,7 +35,7 @@
                 </div>
                 <div v-else class="image-preview">
                   <img :src="imagePreview" alt="Preview" />
-                  <button
+                  <button 
                     type="button"
                     class="btn-remove-image"
                     @click.stop="removeImage"
@@ -44,16 +44,14 @@
                   </button>
                 </div>
               </div>
-              <input
+              <input 
                 ref="fileInput"
                 type="file"
                 accept="image/*"
                 @change="handleFileChange"
                 style="display: none"
               />
-              <p v-if="errors.image" class="error-message">
-                {{ errors.image }}
-              </p>
+              <p v-if="errors.image" class="error-message">{{ errors.image }}</p>
             </div>
 
             <!-- Grid Form Fields -->
@@ -61,54 +59,48 @@
               <!-- Judul -->
               <div class="form-group">
                 <label class="form-label">Judul Paket *</label>
-                <input
+                <input 
                   v-model="form.judul"
                   type="text"
                   class="form-input"
                   placeholder="Contoh: Puncak Besar Malabar"
-                  :class="{ error: errors.judul }"
+                  :class="{ 'error': errors.judul }"
                 />
-                <p v-if="errors.judul" class="error-message">
-                  {{ errors.judul }}
-                </p>
+                <p v-if="errors.judul" class="error-message">{{ errors.judul }}</p>
               </div>
 
               <!-- Penulis -->
               <div class="form-group">
                 <label class="form-label">Penulis/Publisher *</label>
-                <input
+                <input 
                   v-model="form.penulis"
                   type="text"
                   class="form-input"
                   placeholder="Nama penulis"
-                  :class="{ error: errors.penulis }"
+                  :class="{ 'error': errors.penulis }"
                 />
-                <p v-if="errors.penulis" class="error-message">
-                  {{ errors.penulis }}
-                </p>
+                <p v-if="errors.penulis" class="error-message">{{ errors.penulis }}</p>
               </div>
 
               <!-- Jenis -->
               <div class="form-group">
                 <label class="form-label">Jenis Trip *</label>
-                <select
+                <select 
                   v-model="form.jenis"
                   class="form-input"
-                  :class="{ error: errors.jenis }"
+                  :class="{ 'error': errors.jenis }"
                 >
                   <option value="">Pilih jenis trip</option>
                   <option value="open trip">Open Trip</option>
                   <option value="private">Private</option>
                 </select>
-                <p v-if="errors.jenis" class="error-message">
-                  {{ errors.jenis }}
-                </p>
+                <p v-if="errors.jenis" class="error-message">{{ errors.jenis }}</p>
               </div>
 
               <!-- Rating -->
               <div class="form-group">
                 <label class="form-label">Rating (0-5)</label>
-                <input
+                <input 
                   v-model.number="form.rating"
                   type="number"
                   step="0.1"
@@ -122,113 +114,107 @@
               <!-- Tanggal -->
               <div class="form-group">
                 <label class="form-label">Tanggal Trip *</label>
-                <input
+                <input 
                   v-model="form.tanggal"
                   type="date"
                   class="form-input"
-                  :class="{ error: errors.tanggal }"
+                  :class="{ 'error': errors.tanggal }"
                 />
-                <p v-if="errors.tanggal" class="error-message">
-                  {{ errors.tanggal }}
-                </p>
+                <p v-if="errors.tanggal" class="error-message">{{ errors.tanggal }}</p>
               </div>
 
               <!-- Biaya -->
               <div class="form-group">
                 <label class="form-label">Biaya (Rp) *</label>
-                <input
+                <input 
                   v-model.number="form.biaya"
                   type="number"
                   class="form-input"
                   placeholder="500000"
-                  :class="{ error: errors.biaya }"
+                  :class="{ 'error': errors.biaya }"
                 />
-                <p v-if="errors.biaya" class="error-message">
-                  {{ errors.biaya }}
-                </p>
+                <p v-if="errors.biaya" class="error-message">{{ errors.biaya }}</p>
               </div>
 
               <!-- Titik Kumpul -->
               <div class="form-group">
                 <label class="form-label">Titik Kumpul *</label>
-                <input
+                <input 
                   v-model="form.titikKumpul"
                   type="text"
                   class="form-input"
                   placeholder="Contoh: Stasiun Bandung"
-                  :class="{ error: errors.titikKumpul }"
+                  :class="{ 'error': errors.titikKumpul }"
                 />
-                <p v-if="errors.titikKumpul" class="error-message">
-                  {{ errors.titikKumpul }}
-                </p>
+                <p v-if="errors.titikKumpul" class="error-message">{{ errors.titikKumpul }}</p>
               </div>
 
               <!-- Waktu -->
               <div class="form-group">
                 <label class="form-label">Waktu Keberangkatan *</label>
-                <input
+                <input 
                   v-model="form.waktu"
                   type="time"
                   class="form-input"
-                  :class="{ error: errors.waktu }"
+                  :class="{ 'error': errors.waktu }"
                 />
-                <p v-if="errors.waktu" class="error-message">
-                  {{ errors.waktu }}
-                </p>
+                <p v-if="errors.waktu" class="error-message">{{ errors.waktu }}</p>
               </div>
 
               <!-- Kontak -->
               <div class="form-group">
                 <label class="form-label">Kontak Narahubung *</label>
-                <input
+                <input 
                   v-model="form.kontak"
                   type="text"
                   class="form-input"
                   placeholder="08123456789"
-                  :class="{ error: errors.kontak }"
+                  :class="{ 'error': errors.kontak }"
                 />
-                <p v-if="errors.kontak" class="error-message">
-                  {{ errors.kontak }}
-                </p>
+                <p v-if="errors.kontak" class="error-message">{{ errors.kontak }}</p>
               </div>
 
               <!-- Guide -->
               <div class="form-group">
                 <label class="form-label">Nama Guide *</label>
-                <input
+                <input 
                   v-model="form.guide"
                   type="text"
                   class="form-input"
                   placeholder="Nama guide"
-                  :class="{ error: errors.guide }"
+                  :class="{ 'error': errors.guide }"
                 />
-                <p v-if="errors.guide" class="error-message">
-                  {{ errors.guide }}
-                </p>
+                <p v-if="errors.guide" class="error-message">{{ errors.guide }}</p>
               </div>
             </div>
 
             <!-- Deskripsi (Full Width) -->
             <div class="form-group">
               <label class="form-label">Deskripsi Paket *</label>
-              <textarea
+              <textarea 
                 v-model="form.deskripsi"
                 class="form-textarea"
                 rows="6"
                 placeholder="Jelaskan detail paket wisata..."
-                :class="{ error: errors.deskripsi }"
+                :class="{ 'error': errors.deskripsi }"
               ></textarea>
-              <p v-if="errors.deskripsi" class="error-message">
-                {{ errors.deskripsi }}
-              </p>
+              <p v-if="errors.deskripsi" class="error-message">{{ errors.deskripsi }}</p>
             </div>
 
             <!-- Submit Buttons -->
             <div class="form-actions">
-              <button type="button" @click="goBack" class="btn-cancel">
+              <button 
+                type="button"
+                @click="goBack"
+                class="btn-cancel"
+              >
                 Batal
               </button>
-              <button type="submit" class="btn-submit" :disabled="loading">
+              <button 
+                type="submit"
+                class="btn-submit"
+                :disabled="loading"
+              >
                 <span v-if="loading">
                   <i class="bi bi-hourglass-split"></i>
                   Menyimpan...
@@ -247,17 +233,17 @@
 </template>
 
 <script>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import Sidebar from "@/components/Sidebar.vue";
-import Navbar from "@/components/Navbar.vue";
-import paketWisataService from "@/services/paketWisataService";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Sidebar from '@/components/Sidebar.vue';
+import Navbar from '@/components/Navbar.vue';
+import paketWisataService from '@/services/paketWisataService';
 
 export default {
-  name: "TambahPaketWisataView",
+  name: 'TambahPaketWisataView',
   components: {
     Sidebar,
-    Navbar,
+    Navbar
   },
   setup() {
     const router = useRouter();
@@ -265,19 +251,19 @@ export default {
     const isDragging = ref(false);
     const imagePreview = ref(null);
     const imageFile = ref(null);
-
+    
     const form = ref({
-      judul: "",
-      penulis: "",
-      jenis: "",
+      judul: '',
+      penulis: '',
+      jenis: '',
       rating: 0,
-      tanggal: "",
-      biaya: "",
-      titikKumpul: "",
-      waktu: "",
-      kontak: "",
-      guide: "",
-      deskripsi: "",
+      tanggal: '',
+      biaya: '',
+      titikKumpul: '',
+      waktu: '',
+      kontak: '',
+      guide: '',
+      deskripsi: ''
     });
 
     const errors = ref({});
@@ -299,13 +285,13 @@ export default {
 
     const processFile = (file) => {
       // Validasi file
-      if (!file.type.startsWith("image/")) {
-        errors.value.image = "File harus berupa gambar";
+      if (!file.type.startsWith('image/')) {
+        errors.value.image = 'File harus berupa gambar';
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        errors.value.image = "Ukuran file maksimal 5MB";
+        errors.value.image = 'Ukuran file maksimal 5MB';
         return;
       }
 
@@ -330,52 +316,52 @@ export default {
       let isValid = true;
 
       if (!form.value.judul) {
-        errors.value.judul = "Judul harus diisi";
+        errors.value.judul = 'Judul harus diisi';
         isValid = false;
       }
 
       if (!form.value.penulis) {
-        errors.value.penulis = "Penulis harus diisi";
+        errors.value.penulis = 'Penulis harus diisi';
         isValid = false;
       }
 
       if (!form.value.jenis) {
-        errors.value.jenis = "Jenis trip harus dipilih";
+        errors.value.jenis = 'Jenis trip harus dipilih';
         isValid = false;
       }
 
       if (!form.value.tanggal) {
-        errors.value.tanggal = "Tanggal harus diisi";
+        errors.value.tanggal = 'Tanggal harus diisi';
         isValid = false;
       }
 
       if (!form.value.biaya || form.value.biaya <= 0) {
-        errors.value.biaya = "Biaya harus diisi dengan nilai yang valid";
+        errors.value.biaya = 'Biaya harus diisi dengan nilai yang valid';
         isValid = false;
       }
 
       if (!form.value.titikKumpul) {
-        errors.value.titikKumpul = "Titik kumpul harus diisi";
+        errors.value.titikKumpul = 'Titik kumpul harus diisi';
         isValid = false;
       }
 
       if (!form.value.waktu) {
-        errors.value.waktu = "Waktu harus diisi";
+        errors.value.waktu = 'Waktu harus diisi';
         isValid = false;
       }
 
       if (!form.value.kontak) {
-        errors.value.kontak = "Kontak harus diisi";
+        errors.value.kontak = 'Kontak harus diisi';
         isValid = false;
       }
 
       if (!form.value.guide) {
-        errors.value.guide = "Guide harus diisi";
+        errors.value.guide = 'Guide harus diisi';
         isValid = false;
       }
 
       if (!form.value.deskripsi || form.value.deskripsi.length < 20) {
-        errors.value.deskripsi = "Deskripsi minimal 20 karakter";
+        errors.value.deskripsi = 'Deskripsi minimal 20 karakter';
         isValid = false;
       }
 
@@ -391,34 +377,34 @@ export default {
 
       try {
         const formData = new FormData();
-        formData.append("judul", form.value.judul);
-        formData.append("penulis", form.value.penulis);
-        formData.append("jenis", form.value.jenis);
-        formData.append("rating", form.value.rating);
-        formData.append("tanggal", form.value.tanggal);
-        formData.append("biaya", form.value.biaya);
-        formData.append("titikKumpul", form.value.titikKumpul);
-        formData.append("waktu", form.value.waktu);
-        formData.append("kontak", form.value.kontak);
-        formData.append("guide", form.value.guide);
-        formData.append("deskripsi", form.value.deskripsi);
-
+        formData.append('judul', form.value.judul);
+        formData.append('penulis', form.value.penulis);
+        formData.append('jenis', form.value.jenis);
+        formData.append('rating', form.value.rating);
+        formData.append('tanggal', form.value.tanggal);
+        formData.append('biaya', form.value.biaya);
+        formData.append('titikKumpul', form.value.titikKumpul);
+        formData.append('waktu', form.value.waktu);
+        formData.append('kontak', form.value.kontak);
+        formData.append('guide', form.value.guide);
+        formData.append('deskripsi', form.value.deskripsi);
+        
         if (imageFile.value) {
-          formData.append("image", imageFile.value);
+          formData.append('image', imageFile.value);
         }
 
         await paketWisataService.createPaketWisata(formData);
-
-        router.push("/paket-wisata");
+        
+        router.push('/paket-wisata');
       } catch (error) {
-        alert(error.response?.data?.message || "Gagal menyimpan data");
+        alert(error.response?.data?.message || 'Gagal menyimpan data');
       } finally {
         loading.value = false;
       }
     };
 
     const goBack = () => {
-      router.push("/paket-wisata");
+      router.push('/paket-wisata');
     };
 
     return {
@@ -431,10 +417,10 @@ export default {
       handleDrop,
       removeImage,
       handleSubmit,
-      goBack,
+      goBack
     };
-  },
-};
+  }
+}
 </script>
 
 <style scoped>

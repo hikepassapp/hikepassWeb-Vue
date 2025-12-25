@@ -43,21 +43,6 @@ export function usePaketWisataPage() {
     detailModal.openModal(wisata);
   };
 
-  const handleDeleteWisata = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus paket wisata ini?')) {
-      const result = await deleteWisata(id);
-      
-      if (result.success) {
-        if (paginatedWisata.value.length === 0 && currentPage.value > 1) {
-          currentPage.value--;
-        }
-        alert('Paket wisata berhasil dihapus');
-      } else {
-        alert(`Gagal menghapus: ${result.message}`);
-      }
-    }
-  };
-
   const handleViewImage = (image) => {
     imageModal.openModal(image);
   };
@@ -88,8 +73,8 @@ export function usePaketWisataPage() {
     imageModal,
     detailModal,
     handleViewDetail,
-    handleDeleteWisata,
     handleViewImage,
-    handleTambahWisata
+    handleTambahWisata,
+    deleteWisata  
   };
 }
