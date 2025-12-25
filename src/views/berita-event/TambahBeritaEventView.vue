@@ -1,11 +1,9 @@
-// ==================== src/views/EditPaketWisataView.vue ====================
 <template>
-  <div class="form-wisata-page">
+  <div class="form-berita-page">
     <Sidebar />
 
     <div class="main-content">
-      <Navbar pageTitle="Edit Paket Wisata" />
-
+      <Navbar pageTitle="Tambah Berita & Event" />
       <div class="content-wrapper">
         <!-- Back Button -->
         <button @click="goBack" class="btn-back">
@@ -13,27 +11,14 @@
           Kembali
         </button>
 
-        <!-- Loading State -->
-        <div v-if="loadingData" class="loading-container">
-          <div class="spinner"></div>
-          <p>Memuat data...</p>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="loadError" class="error-container">
-          <i class="bi bi-exclamation-triangle"></i>
-          <p>{{ loadError }}</p>
-          <button @click="loadData" class="btn-retry">Coba Lagi</button>
-        </div>
-
         <!-- Form Container -->
-        <div v-else class="form-container">
-          <h2 class="form-title">Edit Paket Wisata</h2>
+        <div class="form-container">
+          <h2 class="form-title">Tambah Berita & Event Baru</h2>
 
           <form @submit.prevent="handleSubmit">
             <!-- Image Upload -->
             <div class="form-group image-upload-group">
-              <label class="form-label">Gambar Paket</label>
+              <label class="form-label">Gambar Berita & Event</label>
               <div
                 class="image-upload-area"
                 @click="$refs.fileInput.click()"
@@ -42,16 +27,13 @@
                 @drop.prevent="handleDrop"
                 :class="{ dragging: isDragging }"
               >
-                <div
-                  v-if="!imagePreview && !currentImage"
-                  class="upload-placeholder"
-                >
+                <div v-if="!imagePreview" class="upload-placeholder">
                   <i class="bi bi-cloud-upload"></i>
                   <p>Klik atau drag & drop gambar di sini</p>
                   <span>PNG, JPG atau WEBP (Max. 5MB)</span>
                 </div>
                 <div v-else class="image-preview">
-                  <img :src="imagePreview || currentImage" alt="Preview" />
+                  <img :src="imagePreview" alt="Preview" />
                   <button
                     type="button"
                     class="btn-remove-image"
@@ -59,10 +41,6 @@
                   >
                     <i class="bi bi-x-circle"></i>
                   </button>
-                  <div v-if="imagePreview" class="image-badge">
-                    <i class="bi bi-arrow-repeat"></i>
-                    Gambar Baru
-                  </div>
                 </div>
               </div>
               <input
@@ -72,10 +50,6 @@
                 @change="handleFileChange"
                 style="display: none"
               />
-              <p class="help-text">
-                <i class="bi bi-info-circle"></i>
-                Kosongkan jika tidak ingin mengubah gambar
-              </p>
               <p v-if="errors.image" class="error-message">
                 {{ errors.image }}
               </p>
@@ -85,12 +59,12 @@
             <div class="form-grid">
               <!-- Judul -->
               <div class="form-group">
-                <label class="form-label">Judul Paket *</label>
+                <label class="form-label">Judul *</label>
                 <input
                   v-model="form.judul"
                   type="text"
                   class="form-input"
-                  placeholder="Contoh: Puncak Besar Malabar"
+                  placeholder="Contoh: Mendaki saat Hujan"
                   :class="{ error: errors.judul }"
                 />
                 <p v-if="errors.judul" class="error-message">
@@ -115,132 +89,43 @@
 
               <!-- Jenis -->
               <div class="form-group">
-                <label class="form-label">Jenis Trip *</label>
+                <label class="form-label">Jenis *</label>
                 <select
                   v-model="form.jenis"
                   class="form-input"
                   :class="{ error: errors.jenis }"
                 >
-                  <option value="">Pilih jenis trip</option>
-                  <option value="open trip">Open Trip</option>
-                  <option value="private">Private</option>
+                  <option value="">Pilih jenis</option>
+                  <option value="berita">Berita</option>
+                  <option value="event">Event</option>
                 </select>
                 <p v-if="errors.jenis" class="error-message">
                   {{ errors.jenis }}
                 </p>
               </div>
 
-              <!-- Rating -->
-              <div class="form-group">
-                <label class="form-label">Rating (0-5)</label>
-                <input
-                  v-model.number="form.rating"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  class="form-input"
-                  placeholder="4.5"
-                />
-              </div>
-
               <!-- Tanggal -->
               <div class="form-group">
-                <label class="form-label">Tanggal Trip *</label>
+                <label class="form-label">Tanggal Publish *</label>
                 <input
-                  v-model="form.tanggal"
+                  v-model="form.tanggalPublish"
                   type="date"
                   class="form-input"
-                  :class="{ error: errors.tanggal }"
+                  :class="{ error: errors.tanggalPublish }"
                 />
-                <p v-if="errors.tanggal" class="error-message">
-                  {{ errors.tanggal }}
-                </p>
-              </div>
-
-              <!-- Biaya -->
-              <div class="form-group">
-                <label class="form-label">Biaya (Rp) *</label>
-                <input
-                  v-model.number="form.biaya"
-                  type="number"
-                  class="form-input"
-                  placeholder="500000"
-                  :class="{ error: errors.biaya }"
-                />
-                <p v-if="errors.biaya" class="error-message">
-                  {{ errors.biaya }}
-                </p>
-              </div>
-
-              <!-- Titik Kumpul -->
-              <div class="form-group">
-                <label class="form-label">Titik Kumpul *</label>
-                <input
-                  v-model="form.titikKumpul"
-                  type="text"
-                  class="form-input"
-                  placeholder="Contoh: Stasiun Bandung"
-                  :class="{ error: errors.titikKumpul }"
-                />
-                <p v-if="errors.titikKumpul" class="error-message">
-                  {{ errors.titikKumpul }}
-                </p>
-              </div>
-
-              <!-- Waktu -->
-              <div class="form-group">
-                <label class="form-label">Waktu Keberangkatan *</label>
-                <input
-                  v-model="form.waktu"
-                  type="time"
-                  class="form-input"
-                  :class="{ error: errors.waktu }"
-                />
-                <p v-if="errors.waktu" class="error-message">
-                  {{ errors.waktu }}
-                </p>
-              </div>
-
-              <!-- Kontak -->
-              <div class="form-group">
-                <label class="form-label">Kontak Narahubung *</label>
-                <input
-                  v-model="form.kontak"
-                  type="text"
-                  class="form-input"
-                  placeholder="08123456789"
-                  :class="{ error: errors.kontak }"
-                />
-                <p v-if="errors.kontak" class="error-message">
-                  {{ errors.kontak }}
-                </p>
-              </div>
-
-              <!-- Guide -->
-              <div class="form-group">
-                <label class="form-label">Nama Guide *</label>
-                <input
-                  v-model="form.guide"
-                  type="text"
-                  class="form-input"
-                  placeholder="Nama guide"
-                  :class="{ error: errors.guide }"
-                />
-                <p v-if="errors.guide" class="error-message">
-                  {{ errors.guide }}
+                <p v-if="errors.tanggalPublish" class="error-message">
+                  {{ errors.tanggalPublish }}
                 </p>
               </div>
             </div>
-
             <!-- Deskripsi (Full Width) -->
             <div class="form-group">
-              <label class="form-label">Deskripsi Paket *</label>
+              <label class="form-label">Deskripsi Berita/Event *</label>
               <textarea
                 v-model="form.deskripsi"
                 class="form-textarea"
                 rows="6"
-                placeholder="Jelaskan detail paket wisata..."
+                placeholder="Jelaskan detail berita/event..."
                 :class="{ error: errors.deskripsi }"
               ></textarea>
               <p v-if="errors.deskripsi" class="error-message">
@@ -260,7 +145,7 @@
                 </span>
                 <span v-else>
                   <i class="bi bi-check-circle"></i>
-                  Simpan Perubahan
+                  Simpan Paket
                 </span>
               </button>
             </div>
@@ -272,78 +157,34 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 import Sidebar from "@/components/Sidebar.vue";
 import Navbar from "@/components/Navbar.vue";
-import paketWisataService from "@/services/paketWisataService";
-import { getImageUrl } from "@/utils/formatters";
+import beritaEventService from "@/services/beritaEventService";
 
 export default {
-  name: "EditPaketWisataView",
+  name: "TambahBeritaEventView",
   components: {
     Sidebar,
     Navbar,
   },
   setup() {
-    const route = useRoute();
     const router = useRouter();
     const loading = ref(false);
-    const loadingData = ref(false);
-    const loadError = ref(null);
     const isDragging = ref(false);
     const imagePreview = ref(null);
     const imageFile = ref(null);
-    const currentImage = ref(null);
 
     const form = ref({
       judul: "",
       penulis: "",
       jenis: "",
-      rating: 0,
-      tanggal: "",
-      biaya: "",
-      titikKumpul: "",
-      waktu: "",
-      kontak: "",
-      guide: "",
+      tanggalPublish: "",
       deskripsi: "",
     });
 
     const errors = ref({});
-
-    const loadData = async () => {
-      loadingData.value = true;
-      loadError.value = null;
-
-      try {
-        const response = await paketWisataService.getPaketWisataById(
-          route.params.id
-        );
-        const item = response.data.data;
-
-        // Populate form
-        form.value = {
-          judul: item.judul,
-          penulis: item.penulis,
-          jenis: item.jenis,
-          rating: item.rating,
-          tanggal: item.tanggal,
-          biaya: item.biaya,
-          titikKumpul: item.titik_kumpul,
-          waktu: item.waktu,
-          kontak: item.kontak,
-          guide: item.guide,
-          deskripsi: item.deskripsi,
-        };
-
-        currentImage.value = getImageUrl(item.image);
-      } catch (err) {
-        loadError.value = err.response?.data?.message || "Gagal mengambil data";
-      } finally {
-        loadingData.value = false;
-      }
-    };
 
     const handleFileChange = (e) => {
       const file = e.target.files[0];
@@ -361,6 +202,7 @@ export default {
     };
 
     const processFile = (file) => {
+      // Validasi file
       if (!file.type.startsWith("image/")) {
         errors.value.image = "File harus berupa gambar";
         return;
@@ -374,6 +216,7 @@ export default {
       imageFile.value = file;
       errors.value.image = null;
 
+      // Preview
       const reader = new FileReader();
       reader.onload = (e) => {
         imagePreview.value = e.target.result;
@@ -384,7 +227,6 @@ export default {
     const removeImage = () => {
       imagePreview.value = null;
       imageFile.value = null;
-      currentImage.value = null;
     };
 
     const validateForm = () => {
@@ -394,45 +236,26 @@ export default {
       if (!form.value.judul) {
         errors.value.judul = "Judul harus diisi";
         isValid = false;
+      } else if (form.value.judul.trim().length < 5) {
+        errors.value.judul = "Judul minimal 5 karakter";
+        isValid = false;
       }
 
       if (!form.value.penulis) {
         errors.value.penulis = "Penulis harus diisi";
         isValid = false;
+      } else if (form.value.penulis.trim().length < 3) {
+        errors.value.penulis = "Nama penulis minimal 3 karakter";
+        isValid = false;
       }
 
       if (!form.value.jenis) {
-        errors.value.jenis = "Jenis trip harus dipilih";
+        errors.value.jenis = "Jenis harus dipilih";
         isValid = false;
       }
 
-      if (!form.value.tanggal) {
-        errors.value.tanggal = "Tanggal harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.biaya || form.value.biaya <= 0) {
-        errors.value.biaya = "Biaya harus diisi dengan nilai yang valid";
-        isValid = false;
-      }
-
-      if (!form.value.titikKumpul) {
-        errors.value.titikKumpul = "Titik kumpul harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.waktu) {
-        errors.value.waktu = "Waktu harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.kontak) {
-        errors.value.kontak = "Kontak harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.guide) {
-        errors.value.guide = "Guide harus diisi";
+      if (!form.value.tanggalPublish) {
+        errors.value.tanggalPublish = "Tanggal harus diisi";
         isValid = false;
       }
 
@@ -445,9 +268,7 @@ export default {
     };
 
     const handleSubmit = async () => {
-      if (!validateForm()) {
-        return;
-      }
+      if (!validateForm()) return;
 
       loading.value = true;
 
@@ -456,23 +277,14 @@ export default {
         formData.append("judul", form.value.judul);
         formData.append("penulis", form.value.penulis);
         formData.append("jenis", form.value.jenis);
-        formData.append("rating", form.value.rating);
-        formData.append("tanggal", form.value.tanggal);
-        formData.append("biaya", form.value.biaya);
-        formData.append("titikKumpul", form.value.titikKumpul);
-        formData.append("waktu", form.value.waktu);
-        formData.append("kontak", form.value.kontak);
-        formData.append("guide", form.value.guide);
+        formData.append("tanggalPublish", form.value.tanggalPublish);
         formData.append("deskripsi", form.value.deskripsi);
 
-        // Hanya tambahkan image jika ada file baru
         if (imageFile.value) {
           formData.append("image", imageFile.value);
         }
-
-        await paketWisataService.updatePaketWisata(route.params.id, formData);
-
-        router.push(`/wisata/detail/${route.params.id}`);
+        await beritaEventService.createBeritaEvent(formData);
+        router.push("/berita");
       } catch (error) {
         alert(error.response?.data?.message || "Gagal menyimpan data");
       } finally {
@@ -481,23 +293,15 @@ export default {
     };
 
     const goBack = () => {
-      router.push(`/wisata/detail/${route.params.id}`);
+      router.push("/berita");
     };
-
-    onMounted(() => {
-      loadData();
-    });
 
     return {
       form,
       errors,
       loading,
-      loadingData,
-      loadError,
       isDragging,
       imagePreview,
-      currentImage,
-      loadData,
       handleFileChange,
       handleDrop,
       removeImage,
@@ -544,53 +348,6 @@ export default {
   background-color: #f8f9fa;
   border-color: #1a7a7a;
   color: #1a7a7a;
-}
-
-/* Loading & Error */
-.loading-container,
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 1rem;
-}
-
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #1a7a7a;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.error-container {
-  color: #dc3545;
-}
-
-.error-container i {
-  font-size: 3rem;
-}
-
-.btn-retry {
-  background-color: #1a7a7a;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .form-container {
@@ -645,15 +402,6 @@ export default {
   color: #ef4444;
   font-size: 0.85rem;
   margin-top: 0.25rem;
-}
-
-.help-text {
-  color: #666;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
 }
 
 /* Image Upload */
@@ -721,26 +469,10 @@ export default {
   justify-content: center;
   cursor: pointer;
   font-size: 1.2rem;
-  z-index: 10;
 }
 
 .btn-remove-image:hover {
   background: #dc2626;
-}
-
-.image-badge {
-  position: absolute;
-  bottom: 0.5rem;
-  left: 0.5rem;
-  background: rgba(26, 122, 122, 0.9);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
 }
 
 /* Form Grid */

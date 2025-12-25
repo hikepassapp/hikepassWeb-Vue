@@ -1,11 +1,9 @@
-// ==================== src/views/EditPaketWisataView.vue ====================
 <template>
-  <div class="form-wisata-page">
+  <div class="form-berita-page">
     <Sidebar />
 
     <div class="main-content">
-      <Navbar pageTitle="Edit Paket Wisata" />
-
+      <Navbar pageTitle="Edit Berita & Event" />
       <div class="content-wrapper">
         <!-- Back Button -->
         <button @click="goBack" class="btn-back">
@@ -28,12 +26,12 @@
 
         <!-- Form Container -->
         <div v-else class="form-container">
-          <h2 class="form-title">Edit Paket Wisata</h2>
+          <h2 class="form-title">Edit Berita & Event</h2>
 
           <form @submit.prevent="handleSubmit">
             <!-- Image Upload -->
             <div class="form-group image-upload-group">
-              <label class="form-label">Gambar Paket</label>
+              <label class="form-label">Gambar Berita & Event</label>
               <div
                 class="image-upload-area"
                 @click="$refs.fileInput.click()"
@@ -85,12 +83,12 @@
             <div class="form-grid">
               <!-- Judul -->
               <div class="form-group">
-                <label class="form-label">Judul Paket *</label>
+                <label class="form-label">Judul Berita & Event *</label>
                 <input
                   v-model="form.judul"
                   type="text"
                   class="form-input"
-                  placeholder="Contoh: Puncak Besar Malabar"
+                  placeholder="Contoh: Mendaki saat Hujan"
                   :class="{ error: errors.judul }"
                 />
                 <p v-if="errors.judul" class="error-message">
@@ -115,132 +113,43 @@
 
               <!-- Jenis -->
               <div class="form-group">
-                <label class="form-label">Jenis Trip *</label>
+                <label class="form-label">Jenis *</label>
                 <select
                   v-model="form.jenis"
                   class="form-input"
                   :class="{ error: errors.jenis }"
                 >
-                  <option value="">Pilih jenis trip</option>
-                  <option value="open trip">Open Trip</option>
-                  <option value="private">Private</option>
+                  <option value="">Pilih jenis</option>
+                  <option value="berita">Berita</option>
+                  <option value="event">Event</option>
                 </select>
                 <p v-if="errors.jenis" class="error-message">
                   {{ errors.jenis }}
                 </p>
               </div>
 
-              <!-- Rating -->
-              <div class="form-group">
-                <label class="form-label">Rating (0-5)</label>
-                <input
-                  v-model.number="form.rating"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  class="form-input"
-                  placeholder="4.5"
-                />
-              </div>
-
               <!-- Tanggal -->
               <div class="form-group">
-                <label class="form-label">Tanggal Trip *</label>
+                <label class="form-label">Tanggal Publish *</label>
                 <input
-                  v-model="form.tanggal"
+                  v-model="form.tanggalPublish"
                   type="date"
                   class="form-input"
-                  :class="{ error: errors.tanggal }"
+                  :class="{ error: errors.tanggalPublish }"
                 />
-                <p v-if="errors.tanggal" class="error-message">
-                  {{ errors.tanggal }}
-                </p>
-              </div>
-
-              <!-- Biaya -->
-              <div class="form-group">
-                <label class="form-label">Biaya (Rp) *</label>
-                <input
-                  v-model.number="form.biaya"
-                  type="number"
-                  class="form-input"
-                  placeholder="500000"
-                  :class="{ error: errors.biaya }"
-                />
-                <p v-if="errors.biaya" class="error-message">
-                  {{ errors.biaya }}
-                </p>
-              </div>
-
-              <!-- Titik Kumpul -->
-              <div class="form-group">
-                <label class="form-label">Titik Kumpul *</label>
-                <input
-                  v-model="form.titikKumpul"
-                  type="text"
-                  class="form-input"
-                  placeholder="Contoh: Stasiun Bandung"
-                  :class="{ error: errors.titikKumpul }"
-                />
-                <p v-if="errors.titikKumpul" class="error-message">
-                  {{ errors.titikKumpul }}
-                </p>
-              </div>
-
-              <!-- Waktu -->
-              <div class="form-group">
-                <label class="form-label">Waktu Keberangkatan *</label>
-                <input
-                  v-model="form.waktu"
-                  type="time"
-                  class="form-input"
-                  :class="{ error: errors.waktu }"
-                />
-                <p v-if="errors.waktu" class="error-message">
-                  {{ errors.waktu }}
-                </p>
-              </div>
-
-              <!-- Kontak -->
-              <div class="form-group">
-                <label class="form-label">Kontak Narahubung *</label>
-                <input
-                  v-model="form.kontak"
-                  type="text"
-                  class="form-input"
-                  placeholder="08123456789"
-                  :class="{ error: errors.kontak }"
-                />
-                <p v-if="errors.kontak" class="error-message">
-                  {{ errors.kontak }}
-                </p>
-              </div>
-
-              <!-- Guide -->
-              <div class="form-group">
-                <label class="form-label">Nama Guide *</label>
-                <input
-                  v-model="form.guide"
-                  type="text"
-                  class="form-input"
-                  placeholder="Nama guide"
-                  :class="{ error: errors.guide }"
-                />
-                <p v-if="errors.guide" class="error-message">
-                  {{ errors.guide }}
+                <p v-if="errors.tanggalPublish" class="error-message">
+                  {{ errors.tanggalPublish }}
                 </p>
               </div>
             </div>
-
             <!-- Deskripsi (Full Width) -->
             <div class="form-group">
-              <label class="form-label">Deskripsi Paket *</label>
+              <label class="form-label">Deskripsi Berita & Event *</label>
               <textarea
                 v-model="form.deskripsi"
                 class="form-textarea"
                 rows="6"
-                placeholder="Jelaskan detail paket wisata..."
+                placeholder="Jelaskan detail berita & event..."
                 :class="{ error: errors.deskripsi }"
               ></textarea>
               <p v-if="errors.deskripsi" class="error-message">
@@ -276,11 +185,11 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Sidebar from "@/components/Sidebar.vue";
 import Navbar from "@/components/Navbar.vue";
-import paketWisataService from "@/services/paketWisataService";
+import beritaEventService from "@/services/beritaEventService";
 import { getImageUrl } from "@/utils/formatters";
 
 export default {
-  name: "EditPaketWisataView",
+  name: "EditBeritaEventView",
   components: {
     Sidebar,
     Navbar,
@@ -300,13 +209,7 @@ export default {
       judul: "",
       penulis: "",
       jenis: "",
-      rating: 0,
-      tanggal: "",
-      biaya: "",
-      titikKumpul: "",
-      waktu: "",
-      kontak: "",
-      guide: "",
+      tanggalPublish: "",
       deskripsi: "",
     });
 
@@ -317,23 +220,15 @@ export default {
       loadError.value = null;
 
       try {
-        const response = await paketWisataService.getPaketWisataById(
+        const response = await beritaEventService.getBeritaEventById(
           route.params.id
         );
         const item = response.data.data;
-
-        // Populate form
         form.value = {
           judul: item.judul,
           penulis: item.penulis,
           jenis: item.jenis,
-          rating: item.rating,
-          tanggal: item.tanggal,
-          biaya: item.biaya,
-          titikKumpul: item.titik_kumpul,
-          waktu: item.waktu,
-          kontak: item.kontak,
-          guide: item.guide,
+          tanggalPublish: item.tanggalPublish,
           deskripsi: item.deskripsi,
         };
 
@@ -402,37 +297,12 @@ export default {
       }
 
       if (!form.value.jenis) {
-        errors.value.jenis = "Jenis trip harus dipilih";
+        errors.value.jenis = "Jenis harus dipilih";
         isValid = false;
       }
 
-      if (!form.value.tanggal) {
-        errors.value.tanggal = "Tanggal harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.biaya || form.value.biaya <= 0) {
-        errors.value.biaya = "Biaya harus diisi dengan nilai yang valid";
-        isValid = false;
-      }
-
-      if (!form.value.titikKumpul) {
-        errors.value.titikKumpul = "Titik kumpul harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.waktu) {
-        errors.value.waktu = "Waktu harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.kontak) {
-        errors.value.kontak = "Kontak harus diisi";
-        isValid = false;
-      }
-
-      if (!form.value.guide) {
-        errors.value.guide = "Guide harus diisi";
+      if (!form.value.tanggalPublish) {
+        errors.value.tanggalPublish = "Tanggal harus diisi";
         isValid = false;
       }
 
@@ -456,23 +326,16 @@ export default {
         formData.append("judul", form.value.judul);
         formData.append("penulis", form.value.penulis);
         formData.append("jenis", form.value.jenis);
-        formData.append("rating", form.value.rating);
-        formData.append("tanggal", form.value.tanggal);
-        formData.append("biaya", form.value.biaya);
-        formData.append("titikKumpul", form.value.titikKumpul);
-        formData.append("waktu", form.value.waktu);
-        formData.append("kontak", form.value.kontak);
-        formData.append("guide", form.value.guide);
+        formData.append("tanggalPublish", form.value.tanggalPublish);
         formData.append("deskripsi", form.value.deskripsi);
 
-        // Hanya tambahkan image jika ada file baru
         if (imageFile.value) {
           formData.append("image", imageFile.value);
         }
 
-        await paketWisataService.updatePaketWisata(route.params.id, formData);
+        await beritaEventService.updateBeritaEvent(route.params.id, formData);
 
-        router.push(`/wisata/detail/${route.params.id}`);
+        router.push(`/berita/detail/${route.params.id}`);
       } catch (error) {
         alert(error.response?.data?.message || "Gagal menyimpan data");
       } finally {
@@ -481,7 +344,7 @@ export default {
     };
 
     const goBack = () => {
-      router.push(`/wisata/detail/${route.params.id}`);
+      router.push(`/berita/detail/${route.params.id}`);
     };
 
     onMounted(() => {
