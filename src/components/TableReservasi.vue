@@ -5,34 +5,43 @@
         <thead>
           <tr>
             <th>No</th>
-            <th>Kode Reservasi</th>
+            <th>ID Reservasi</th>
             <th>Nama</th>
             <th>NIK</th>
-            <th>Kontak</th>
-            <th>Jumlah Pendaki</th>
+            <th>Gunung</th>
+            <th>Tanggal Mulai</th>
+            <th>No. Telepon</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(reservasi, index) in reservations" :key="reservasi.id">
+          <tr v-for="(reservation, index) in reservations" :key="reservation.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ reservasi.kodeReservasi }}</td>
-            <td>{{ reservasi.nama }}</td>
-            <td>{{ reservasi.nik }}</td>
-            <td>{{ reservasi.kontak }}</td>
-            <td>{{ reservasi.jumlahPendaki }}</td>
+            <td>{{ reservation.id }}</td>
+            <td>{{ reservation.name }}</td>
+            <td>{{ reservation.nik }}</td>
+            <td>{{ reservation.mountain?.name || '-' }}</td>
+            <td>{{ formatDate(reservation.start_date) }}</td>
+            <td>{{ reservation.phone_number }}</td>
             <td>
               <div class="action-buttons">
                 <button 
                   class="btn-action btn-detail"
-                  @click="$emit('view-detail', reservasi)"
+                  @click="$emit('view-detail', reservation)"
                   title="Lihat Detail"
                 >
                   <i class="bi bi-arrow-right"></i>
                 </button>
                 <button 
+                  class="btn-action btn-edit"
+                  @click="$emit('edit-reservasi', reservation)"
+                  title="Edit"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button 
                   class="btn-action btn-delete"
-                  @click="$emit('delete-reservasi', reservasi.id)"
+                  @click="$emit('delete-reservasi', reservation.id)"
                   title="Hapus"
                 >
                   <i class="bi bi-trash"></i>
@@ -43,7 +52,7 @@
           
           <!-- Empty State -->
           <tr v-if="reservations.length === 0">
-            <td colspan="7" class="text-center empty-state">
+            <td colspan="8" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
               <p>Belum ada data reservasi</p>
             </td>
@@ -63,7 +72,16 @@ export default {
       required: true
     }
   },
-  emits: ['view-detail', 'delete-reservasi']
+  emits: ['view-detail', 'edit-reservasi', 'delete-reservasi'],
+  methods: {
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+  }
 }
 </script>
 
@@ -138,6 +156,16 @@ export default {
 
 .btn-detail:hover {
   background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.btn-edit {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #d97706;
   transform: translateY(-2px);
 }
 

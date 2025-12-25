@@ -6,37 +6,46 @@
       </button>
       <h3 class="modal-title">Tambah Data Gunung</h3>
       <div class="form-content">
+        <div v-if="errors.general" class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-circle me-2"></i>{{ errors.general }}
+        </div>
         <div class="form-group">
           <label>Nama Gunung</label>
           <input 
             type="text" 
             v-model="formData.name" 
             class="form-control"
+            :class="{ 'is-invalid': errors.name }"
             placeholder="Masukkan nama gunung"
           />
+          <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
         </div>
         <div class="form-group">
           <label>Pengelola</label>
           <select 
             v-model="formData.manager" 
             class="form-control"
+            :class="{ 'is-invalid': errors.manager }"
           >
             <option value="">Pilih Pengelola</option>
             <option value="LMDH">LMDH</option>
             <option value="Perhutani">Perhutani</option>
             <option value="Taman Nasional">Taman Nasional</option>
           </select>
+          <div v-if="errors.manager" class="invalid-feedback">{{ errors.manager }}</div>
         </div>
         <div class="form-group">
           <label>Status</label>
           <select 
             v-model="formData.status" 
             class="form-control"
+            :class="{ 'is-invalid': errors.status }"
           >
             <option value="">Pilih Status</option>
             <option value="Buka">Buka</option>
             <option value="Tutup">Tutup</option>
           </select>
+          <div v-if="errors.status" class="invalid-feedback">{{ errors.status }}</div>
         </div>
         <div class="form-group">
           <label>Kuota</label>
@@ -44,8 +53,11 @@
             type="number" 
             v-model="formData.quota" 
             class="form-control"
+            :class="{ 'is-invalid': errors.quota }"
             placeholder="Masukkan kuota"
+            min="1"
           />
+          <div v-if="errors.quota" class="invalid-feedback">{{ errors.quota }}</div>
         </div>
         <div class="form-group">
           <label>Lokasi</label>
@@ -53,8 +65,10 @@
             type="text" 
             v-model="formData.location" 
             class="form-control"
+            :class="{ 'is-invalid': errors.location }"
             placeholder="Masukkan lokasi"
           />
+          <div v-if="errors.location" class="invalid-feedback">{{ errors.location }}</div>
         </div>
         <div class="form-group">
           <label>Kontak</label>
@@ -62,8 +76,10 @@
             type="text" 
             v-model="formData.contact" 
             class="form-control"
+            :class="{ 'is-invalid': errors.contact }"
             placeholder="email atau nomor telepon. Jika nomor telepon diawali +62"
           />
+          <div v-if="errors.contact" class="invalid-feedback">{{ errors.contact }}</div>
         </div>
         <div class="form-group">
           <label>Harga</label>
@@ -71,8 +87,11 @@
             type="number" 
             v-model="formData.price" 
             class="form-control"
+            :class="{ 'is-invalid': errors.price }"
             placeholder="Masukkan harga, angka saja"
+            min="0"
           />
+          <div v-if="errors.price" class="invalid-feedback">{{ errors.price }}</div>
         </div>
         <div class="form-group">
           <label>Durasi</label>
@@ -82,6 +101,7 @@
             class="form-control"
             placeholder="contoh: 2 hari 1 malam atau 2 Jam 35 Menit"
           />
+          <div v-if="errors.duration" class="invalid-feedback">{{ errors.duration }}</div>
         </div>
         <div class="form-group">
           <label>Pos</label>
@@ -89,8 +109,10 @@
             type="text" 
             v-model="formData.pos" 
             class="form-control"
+            :class="{ 'is-invalid': errors.pos }"
             placeholder="Masukkan pos/basecamp"
           />
+          <div v-if="errors.pos" class="invalid-feedback">{{ errors.pos }}</div>
         </div>
         <div class="form-group">
           <label>Gambar Gunung</label>
@@ -157,12 +179,16 @@
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn-cancel" @click="handleClose">
+          <button class="btn-cancel" @click="handleClose" :disabled="isSubmitting">
             Batal
           </button>
-          <button class="btn-save" @click="handleSave">
-            <i class="bi bi-check-circle me-2"></i>
-            Simpan
+          <button class="btn-save" @click="handleSave" :disabled="isSubmitting">
+            <i v-if="!isSubmitting" class="bi bi-check-circle me-2"></i>
+            <span v-if="isSubmitting">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Menyimpan...
+            </span>
+            <span v-else>Simpan</span>
           </button>
         </div>
       </div>

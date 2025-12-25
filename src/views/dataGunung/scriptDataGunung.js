@@ -89,6 +89,8 @@ export default {
         },
         closeAddModal() {
             this.showAddModal = false;
+            // Clear any error state in modal
+            this.$refs.modalAddGunung?.clearErrors?.()
         },
         async saveNewMountain(formData) {
             try {
@@ -143,6 +145,9 @@ export default {
                 this.feedbackMessage = 'Gagal menambahkan data gunung: ' + (error.response?.data?.message || error.message)
                 this.feedbackType = 'error'
                 this.showFeedbackModal = true
+                this.$refs.modalAddGunung?.setGeneralError?.(errorMessage)
+            } finally {
+                this.$refs.modalAddGunung?.setSubmitting?.(false)
             }
         },
         editMountain(mountain) {
