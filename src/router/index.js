@@ -9,7 +9,7 @@ import DaftarLaporan from '../views/DaftarLaporan.vue'
 import User from '../views/User.vue'
 import Reservasi from '../views/Reservasi.vue'
 import Berita from '../views/Berita.vue'
-import PaketWisata from '../views/PaketWisata.vue'
+import PaketWisata from '../views/paket-wisata/PaketWisataView.vue'
 import Informasi from '../views/Informasi.vue'
 
 const routes = [
@@ -56,6 +56,21 @@ const routes = [
     path: '/paket-wisata',
     name: 'PaketWisata',
     component: PaketWisata
+  },
+  {
+    path: '/wisata/tambah',
+    name: 'TambahPaketWisata',
+    component: () => import('@/views/paket-wisata/TambahPaketWisataView.vue')
+  },
+  {
+    path: '/wisata/detail/:id',
+    name: 'DetailPaketWisata',
+    component: () => import('@/views/paket-wisata/DetailPaketWisataView.vue')
+  },
+  {
+    path: '/wisata/edit/:id',
+    name: 'EditPaketWisata',
+    component: () => import('@/views/paket-wisata/EditPaketWisataView.vue')
   },
   {
     path: '/informasi',
