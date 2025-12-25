@@ -30,6 +30,7 @@ export default {
             showDeleteModal: false,
             showFeedbackModal: false,
             feedbackMessage: '',
+            feedbackType: 'success',
             mountainToDelete: null,
             selectedMountain: null,
             API_URL: 'http://127.0.0.1:8000/api/mountains',
@@ -61,11 +62,19 @@ export default {
     methods: {
         async fetchMountains() {
             try {
+                console.log('📡 Fetching mountains from:', this.API_URL)
                 const response = await axios.get(this.API_URL)
+                console.log('✅ Mountains loaded:', response.data.length, 'items')
                 this.mountains = response.data
             } catch (error) {
-                console.error('Error fetching mountains:', error)
-                this.feedbackMessage = 'Gagal memuat data gunung'
+                console.error('❌ Error fetching mountains:', error)
+                console.error('Error details:', {
+                    message: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status
+                })
+                this.feedbackMessage = 'Gagal memuat data gunung: ' + (error.response?.data?.message || error.message)
+                this.feedbackType = 'error'
                 this.showFeedbackModal = true
             }
         },
@@ -83,14 +92,56 @@ export default {
         },
         async saveNewMountain(formData) {
             try {
-                await axios.post(this.API_URL, formData)
+                console.log('➕ Adding new mountain')
+                // Modal may emit an object with imageFile; convert to FormData if needed
+                let payload = formData
+                if (!(formData instanceof FormData)) {
+                    payload = new FormData()
+                    // append simple fields
+                    payload.append('name', formData.name || '')
+                    payload.append('status', formData.status || '')
+                    payload.append('manager', formData.manager || '')
+                    payload.append('quota', formData.quota || '')
+                    payload.append('location', formData.location || '')
+                    payload.append('contact', formData.contact || '')
+                    payload.append('price', formData.price || '')
+                    payload.append('duration', formData.duration || '')
+                    payload.append('pos', formData.pos || '')
+
+                    const imgOpt = formData.imageOption || 'default'
+                    if (imgOpt === 'file' && formData.imageFile) {
+                        payload.append('image', formData.imageFile)
+                        payload.append('image_type', 'file')
+                    } else if (imgOpt === 'url') {
+                        payload.append('image_url', formData.imageUrl || formData.image || '')
+                        payload.append('image_type', 'url')
+                    } else {
+                        // default path
+                        payload.append('image_path', formData.image || 'mountains/defaultMountainPics.jpg')
+                        payload.append('image_type', 'path')
+                    }
+                }
+
+                const response = await axios.post(this.API_URL, payload, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+                console.log('✅ Mountain added successfully:', response.data)
                 await this.fetchMountains()
                 this.closeAddModal()
                 this.feedbackMessage = 'Data gunung berhasil ditambahkan!'
+                this.feedbackType = 'success'
                 this.showFeedbackModal = true
             } catch (error) {
-                console.error('Error adding mountain:', error)
-                this.feedbackMessage = 'Gagal menambahkan data gunung'
+                console.error('❌ Error adding mountain:', error)
+                console.error('Error details:', {
+                    message: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status
+                })
+                this.feedbackMessage = 'Gagal menambahkan data gunung: ' + (error.response?.data?.message || error.message)
+                this.feedbackType = 'error'
                 this.showFeedbackModal = true
             }
         },
@@ -105,14 +156,29 @@ export default {
         async saveMountain(formData) {
             if (this.selectedMountain) {
                 try {
-                    await axios.put(`${this.API_URL}/${this.selectedMountain.id}`, formData)
+                    console.log('✏️ Updating mountain ID:', this.selectedMountain.id)
+                    // FormData is already prepared by modal
+                    const response = await axios.post(`${this.API_URL}/${this.selectedMountain.id}?_method=PUT`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+                    console.log('✅ Mountain updated successfully:', response.data)
                     await this.fetchMountains()
                     this.closeEditModal()
                     this.feedbackMessage = 'Data gunung berhasil diperbarui!'
+                    this.feedbackType = 'success'
                     this.showFeedbackModal = true
                 } catch (error) {
-                    console.error('Error updating mountain:', error)
-                    this.feedbackMessage = 'Gagal memperbarui data gunung'
+                    console.error('❌ Error updating mountain:', error)
+                    console.error('Error details:', {
+                        message: error.message,
+                        response: error.response?.data,
+                        status: error.response?.status,
+                        mountainId: this.selectedMountain.id
+                    })
+                    this.feedbackMessage = 'Gagal memperbarui data gunung: ' + (error.response?.data?.message || error.message)
+                    this.feedbackType = 'error'
                     this.showFeedbackModal = true
                 }
             }
@@ -124,24 +190,34 @@ export default {
         async confirmDelete() {
             if (this.mountainToDelete) {
                 try {
-                    console.log('Deleting mountain with ID:', this.mountainToDelete.id)
+                    console.log('🗑️ Deleting mountain ID:', this.mountainToDelete.id, 'Name:', this.mountainToDelete.name)
                     const response = await axios.delete(`${this.API_URL}/${this.mountainToDelete.id}`)
-                    console.log('Delete response:', response)
+                    console.log('✅ Mountain deleted successfully:', response.data)
                     await this.fetchMountains()
                     this.showDeleteModal = false
                     this.mountainToDelete = null
                     this.feedbackMessage = 'Data gunung berhasil dihapus!'
+                    this.feedbackType = 'success'
                     this.showFeedbackModal = true
                 } catch (error) {
-                    console.error('Error deleting mountain:', error)
-                    console.error('Error details:', error.response)
+                    console.error('❌ Error deleting mountain:', error)
+                    console.error('Error details:', {
+                        message: error.message,
+                        response: error.response?.data,
+                        status: error.response?.status,
+                        mountainId: this.mountainToDelete.id
+                    })
                     this.feedbackMessage = 'Gagal menghapus data gunung: ' + (error.response?.data?.message || error.message)
+                    this.feedbackType = 'error'
                     this.showFeedbackModal = true
                     this.showDeleteModal = false
                     this.mountainToDelete = null
                 }
             } else {
-                console.error('No mountain selected for deletion')
+                console.error('⚠️ No mountain selected for deletion')
+                this.feedbackMessage = 'Tidak ada data yang dipilih untuk dihapus'
+                this.feedbackType = 'error'
+                this.showFeedbackModal = true
             }
         },
         cancelDelete() {
@@ -151,6 +227,7 @@ export default {
         closeFeedbackModal() {
             this.showFeedbackModal = false;
             this.feedbackMessage = '';
+            this.feedbackType = 'success';
         }
     }
 }

@@ -293,7 +293,8 @@
 }
 
 .modal-icon-warning,
-.modal-icon-success {
+.modal-icon-success,
+.modal-icon-error {
     width: 80px;
     height: 80px;
     margin: 0 auto 1.5rem;
@@ -312,6 +313,11 @@
 .modal-icon-success {
     background-color: #d1fae5;
     color: #10b981;
+}
+
+.modal-icon-error {
+    background-color: #fee2e2;
+    color: #ef4444;
 }
 
 .modal-message {
@@ -355,4 +361,24 @@
 
 .btn-ok:hover {
     background-color: #145f5f;
+}
+
+.btn-default-img {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    color: #1a7a7a;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-default-img:hover {
+    background-color: #1a7a7a;
+    color: white;
+    border-color: #1a7a7a;
 }

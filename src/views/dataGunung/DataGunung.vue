@@ -71,6 +71,7 @@
     <ModalFeedbackGunung 
       :show="showFeedbackModal"
       :message="feedbackMessage"
+      :type="feedbackType"
       @close="closeFeedbackModal"
     />
   </div>
