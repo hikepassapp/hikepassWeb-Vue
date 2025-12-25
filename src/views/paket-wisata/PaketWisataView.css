@@ -1,0 +1,37 @@
+.paket-wisata-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+}
+
+.content-wrapper {
+  padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .content-wrapper {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .content-wrapper {
+    padding: 1rem;
+  }
+}

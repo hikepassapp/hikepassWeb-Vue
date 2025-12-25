@@ -9,7 +9,7 @@
             <th>Judul</th>
             <th>Jenis</th>
             <th>Kontak</th>
-            <th>Tanggal Terbit</th>
+            <th>Tanggal Trip</th>
             <th>Guide</th>
             <th>Aksi</th>
           </tr>
@@ -19,8 +19,8 @@
             <td>{{ startIndex + index + 1 }}</td>
             <td>
               <div class="image-cell">
-                <img 
-                  :src="wisata.gambar" 
+                <img
+                  :src="wisata.gambar"
                   :alt="wisata.judul"
                   class="wisata-image"
                   @click="$emit('view-image', wisata.gambar)"
@@ -37,20 +37,20 @@
               <span class="badge-jenis">{{ wisata.jenis }}</span>
             </td>
             <td>{{ wisata.kontak }}</td>
-            <td>{{ wisata.tanggalTerbit }}</td>
+            <td>{{ formatDate(wisata.tanggalTerbit) }}</td>
             <td>{{ wisata.guide }}</td>
             <td>
               <div class="action-buttons">
-                <button 
+                <button
                   class="btn-action btn-detail"
                   @click="$emit('view-detail', wisata)"
                   title="Lihat Detail"
                 >
                   <i class="bi bi-arrow-right"></i>
                 </button>
-                <button 
+                <button
                   class="btn-action btn-delete"
-                  @click="$emit('delete-wisata', wisata.id)"
+                  @click="$emit('delete-wisata', wisata.id, wisata.judul)"
                   title="Hapus"
                 >
                   <i class="bi bi-trash"></i>
@@ -58,7 +58,7 @@
               </div>
             </td>
           </tr>
-          
+
           <!-- Empty State -->
           <tr v-if="wisataList.length === 0">
             <td colspan="8" class="text-center empty-state">
@@ -73,28 +73,32 @@
 </template>
 
 <script>
+import { formatDate } from "@/utils/formatters";
+
 export default {
-  name: 'TableWisata',
+  name: "TableWisata",
   props: {
     wisataList: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     startIndex: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   methods: {
     handleImageError(e) {
-      e.target.src = 'https://via.placeholder.com/100x80?text=No+Image';
-    }
+      e.target.src = "https://via.placeholder.com/100x80?text=No+Image";
+    },
+    formatDate,
   },
-  emits: ['view-detail', 'delete-wisata', 'view-image']
-}
+  emits: ["view-detail", "delete-wisata", "view-image"],
+};
 </script>
 
 <style scoped>
+/* CSS sama seperti sebelumnya */
 .table-container {
   background: white;
   border-radius: 12px;
@@ -228,7 +232,6 @@ export default {
   font-size: 1.1rem;
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
   .title-cell {
     max-width: 200px;
@@ -241,16 +244,16 @@ export default {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
-  
+
   .image-cell {
     width: 70px;
     height: 60px;
   }
-  
+
   .title-cell {
     max-width: 150px;
   }
-  
+
   .btn-action {
     width: 32px;
     height: 32px;
