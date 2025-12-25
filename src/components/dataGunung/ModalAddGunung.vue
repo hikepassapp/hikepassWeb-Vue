@@ -1,7 +1,7 @@
 <template>
-  <div v-if="show" class="modal-overlay" @click="$emit('close')">
-    <div class="modal-detail" @click.stop ref="modalForm">
-      <button class="modal-close" @click="$emit('close')">
+  <div v-if="show" class="modal-overlay" @click="handleClose">
+    <div class="modal-detail" @click.stop>
+      <button class="modal-close" @click="handleClose">
         <i class="bi bi-x-lg"></i>
       </button>
       <h3 class="modal-title">Tambah Data Gunung</h3>
@@ -99,8 +99,7 @@
             type="text" 
             v-model="formData.duration" 
             class="form-control"
-            :class="{ 'is-invalid': errors.duration }"
-            placeholder="Dengan satuan jam atau menit"
+            placeholder="contoh: 2 hari 1 malam atau 2 Jam 35 Menit"
           />
           <div v-if="errors.duration" class="invalid-feedback">{{ errors.duration }}</div>
         </div>
@@ -116,15 +115,68 @@
           <div v-if="errors.pos" class="invalid-feedback">{{ errors.pos }}</div>
         </div>
         <div class="form-group">
-          <label>URL Gambar</label>
-          <input 
-            type="text" 
-            v-model="formData.image" 
-            class="form-control"
-            :class="{ 'is-invalid': errors.image }"
-            placeholder="https://example.com/image.jpg"
-          />
-          <div v-if="errors.image" class="invalid-feedback">{{ errors.image }}</div>
+          <label>Gambar Gunung</label>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: normal;">
+              <input type="radio" name="imageOption" v-model="imageOption" value="file" />
+              Upload File dari Komputer
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: normal;">
+              <input type="radio" name="imageOption" v-model="imageOption" value="url" />
+              Gunakan URL Gambar
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+              <input type="radio" name="imageOption" v-model="imageOption" value="default" />
+              Gunakan Gambar Default
+            </label>
+          </div>
+
+          <div v-if="imageOption === 'file'" style="margin-top: 0.5rem;">
+            <input 
+              type="file" 
+              ref="fileInput"
+              @change="handleFileSelect"
+              accept="image/*"
+              style="display: none"
+            />
+            <button 
+              type="button"
+              @click="$refs.fileInput.click()"
+              style="padding: 0.75rem 1.5rem; background: #1a7a7a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;"
+            >
+              <i class="bi bi-upload"></i> Pilih File
+            </button>
+            <small v-if="selectedFileName" style="color: #059669; margin-left: 0.5rem; font-weight: 500;">
+              ✓ {{ selectedFileName }}
+            </small>
+          </div>
+
+          <div v-if="imageOption === 'url'" style="margin-top: 0.5rem;">
+            <input 
+              type="text"
+              v-model="formData.imageUrl"
+              @input="updatePreviewFromUrl"
+              class="form-control"
+              placeholder="https://example.com/image.jpg"
+            />
+            <small style="color: #666; display: block; margin-top: 0.25rem;">
+              Masukkan URL gambar dari internet
+            </small>
+          </div>
+
+          <div v-if="imageOption === 'default'" style="margin-top: 0.5rem; padding: 0.75rem; background: #f0fdfa; border-radius: 8px; border: 1px solid #99f6e4;">
+            <small style="color: #0d9488; font-weight: 500;">
+              <i class="bi bi-image"></i> Menggunakan gambar default
+            </small>
+          </div>
+        </div>
+
+        <div v-if="imagePreview" class="form-group">
+          <label>Preview Gambar</label>
+          <div style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 0.5rem; background: #f9fafb;">
+            <img :src="imagePreview" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 6px; object-fit: cover; display: block; margin: 0 auto;" />
+          </div>
         </div>
         <div class="form-actions">
           <button class="btn-cancel" @click="handleClose" :disabled="isSubmitting">
@@ -145,6 +197,8 @@
 </template>
 
 <script>
+const DEFAULT_IMAGE_URL = 'https://apimice.kemenparekraf.go.id/event-daerah/public/669/0cd/153/6690cd153a162349133709.jpg'
+
 export default {
   name: 'ModalAddGunung',
   props: {
@@ -165,164 +219,82 @@ export default {
         price: '',
         duration: '',
         pos: '',
-        image: ''
+        image: DEFAULT_IMAGE_URL,
+        imageUrl: ''
       },
-      errors: {
-        general: '',
-        name: '',
-        status: '',
-        manager: '',
-        quota: '',
-        location: '',
-        contact: '',
-        price: '',
-        duration: '',
-        pos: '',
-        image: ''
-      },
-      isSubmitting: false
+      imageOption: 'file',
+      imagePreview: DEFAULT_IMAGE_URL,
+      imageFile: null,
+      selectedFileName: ''
+    }
+  },
+  watch: {
+    imageOption(newVal) {
+      if (newVal === 'default') {
+        this.imagePreview = DEFAULT_IMAGE_URL
+      } else if (newVal === 'url') {
+        this.imagePreview = this.formData.imageUrl || null
+      } else if (newVal === 'file') {
+        if (this.imageFile) {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            this.imagePreview = e.target.result
+          }
+          reader.readAsDataURL(this.imageFile)
+        } else {
+          this.imagePreview = null
+        }
+      }
     }
   },
   methods: {
-    validateForm() {
-      this.clearErrors()
-      let isValid = true
-
-      // Validate name
-      if (!this.formData.name || this.formData.name.trim() === '') {
-        this.errors.name = 'Nama gunung harus diisi'
-        isValid = false
-      } else if (this.formData.name.length < 2) {
-        this.errors.name = 'Nama gunung minimal 2 karakter'
-        isValid = false
-      } else if (this.formData.name.length > 100) {
-        this.errors.name = 'Nama gunung maksimal 100 karakter'
-        isValid = false
-      }
-
-      // Validate manager
-      if (!this.formData.manager || this.formData.manager.trim() === '') {
-        this.errors.manager = 'Pengelola harus dipilih'
-        isValid = false
-      }
-
-      // Validate status
-      if (!this.formData.status || this.formData.status.trim() === '') {
-        this.errors.status = 'Status harus dipilih'
-        isValid = false
-      }
-
-      // Validate quota
-      if (!this.formData.quota) {
-        this.errors.quota = 'Kuota harus diisi'
-        isValid = false
-      } else if (parseInt(this.formData.quota) < 1) {
-        this.errors.quota = 'Kuota minimal harus 1'
-        isValid = false
-      } else if (parseInt(this.formData.quota) > 10000) {
-        this.errors.quota = 'Kuota maksimal 10000'
-        isValid = false
-      }
-
-      // Validate location
-      if (!this.formData.location || this.formData.location.trim() === '') {
-        this.errors.location = 'Lokasi harus diisi'
-        isValid = false
-      } else if (this.formData.location.length < 3) {
-        this.errors.location = 'Lokasi minimal 3 karakter'
-        isValid = false
-      }
-
-      // Validate contact (email or phone)
-      if (!this.formData.contact || this.formData.contact.trim() === '') {
-        this.errors.contact = 'Kontak harus diisi'
-        isValid = false
-      } else if (!this.isValidContact(this.formData.contact)) {
-        this.errors.contact = 'Format kontak tidak valid (gunakan email atau nomor telepon +62...)'
-        isValid = false
-      }
-
-      // Validate price
-      if (!this.formData.price && this.formData.price !== 0) {
-        this.errors.price = 'Harga harus diisi'
-        isValid = false
-      } else if (parseInt(this.formData.price) < 0) {
-        this.errors.price = 'Harga tidak boleh negatif'
-        isValid = false
-      }
-
-      // Validate duration
-      if (!this.formData.duration || this.formData.duration.trim() === '') {
-        this.errors.duration = 'Durasi harus diisi'
-        isValid = false
-      } else if (this.formData.duration.length < 2) {
-        this.errors.duration = 'Durasi harus minimal 2 karakter'
-        isValid = false
-      }
-
-      // Validate pos
-      if (!this.formData.pos || this.formData.pos.trim() === '') {
-        this.errors.pos = 'Pos/basecamp harus diisi'
-        isValid = false
-      }
-
-      // Validate image URL (optional but validate if provided)
-      if (this.formData.image && this.formData.image.trim() !== '') {
-        if (!this.isValidUrl(this.formData.image)) {
-          this.errors.image = 'Format URL tidak valid'
-          isValid = false
+    handleFileSelect(event) {
+      const file = event.target.files[0]
+      if (file) {
+        this.imageFile = file
+        this.selectedFileName = file.name
+        this.imageOption = 'file'
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result
         }
+        reader.readAsDataURL(file)
       }
+    },
 
-      return isValid
-    },
-    isValidContact(contact) {
-      // Check if email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (emailRegex.test(contact)) {
-        return true
-      }
-      // Check if phone format (+62...)
-      const phoneRegex = /^\+62\d{9,12}$/
-      if (phoneRegex.test(contact)) {
-        return true
-      }
-      return false
-    },
-    isValidUrl(url) {
-      try {
-        new URL(url)
-        return true
-      } catch (error) {
-        return false
+    updatePreviewFromUrl() {
+      if (this.imageOption === 'url') {
+        this.imagePreview = this.formData.imageUrl || null
       }
     },
-    clearErrors() {
-      this.errors = {
-        general: '',
-        name: '',
-        status: '',
-        manager: '',
-        quota: '',
-        location: '',
-        contact: '',
-        price: '',
-        duration: '',
-        pos: '',
-        image: ''
-      }
-    },
+
     handleSave() {
-      if (!this.validateForm()) {
-        return
+      // prepare the image field based on selected option
+      if (this.imageOption === 'default') {
+        this.formData.image = DEFAULT_IMAGE_URL
+      } else if (this.imageOption === 'url') {
+        this.formData.image = this.formData.imageUrl || DEFAULT_IMAGE_URL
+      } else if (this.imageOption === 'file') {
+        // for now include filename as a hint; main upload handled by parent
+        this.formData.image = this.selectedFileName || DEFAULT_IMAGE_URL
       }
 
-      this.$emit('save', this.formData)
+      this.formData.imageOption = this.imageOption
+      this.$emit('save', { ...this.formData, imageFile: this.imageFile })
+      this.resetForm()
     },
+
     handleClose() {
       this.resetForm()
       this.$emit('close')
     },
+
+    setDefaultImage() {
+      this.imageOption = 'default'
+      this.imagePreview = DEFAULT_IMAGE_URL
+      this.formData.image = DEFAULT_IMAGE_URL
+    },
+
     resetForm() {
       this.formData = {
         name: '',
@@ -334,15 +306,13 @@ export default {
         price: '',
         duration: '',
         pos: '',
-        image: ''
+        image: DEFAULT_IMAGE_URL,
+        imageUrl: ''
       }
-      this.clearErrors()
-    },
-    setSubmitting(value) {
-      this.isSubmitting = value
-    },
-    setGeneralError(message) {
-      this.errors.general = message
+      this.imageOption = 'file'
+      this.imagePreview = DEFAULT_IMAGE_URL
+      this.imageFile = null
+      this.selectedFileName = ''
     }
   }
 }

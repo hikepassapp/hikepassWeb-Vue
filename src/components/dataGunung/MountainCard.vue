@@ -1,7 +1,7 @@
 <template>
   <div class="mountain-card">
     <div class="card-image">
-      <img :src="mountain.image" :alt="mountain.name" />
+      <img :src="imageUrl" :alt="mountain.name" @error="handleImageError" />
     </div>
     
     <div class="card-body">
@@ -32,6 +32,8 @@
 </template>
 
 <script>
+const DEFAULT_IMAGE_PATH = 'mountains/defaultMountainPics.jpg'
+
 export default {
   name: 'MountainCard',
   props: {
@@ -40,9 +42,38 @@ export default {
       required: true
     }
   },
+  data() {
+    return {
+      API_BASE_URL: 'http://127.0.0.1:8000',
+      imageError: false
+    }
+  },
+  computed: {
+    imageUrl() {
+      if (this.imageError) {
+        return `${this.API_BASE_URL}/storage/${DEFAULT_IMAGE_PATH}`
+      }
+      
+      const image = this.mountain.image
+      if (!image) {
+        return `${this.API_BASE_URL}/storage/${DEFAULT_IMAGE_PATH}`
+      }
+      
+      // If it's already a full URL
+      if (image.startsWith('http')) {
+        return image
+      }
+      
+      // If it's a path
+      return `${this.API_BASE_URL}/storage/${image}`
+    }
+  },
   methods: {
     formatPrice(price) {
       return `Rp. ${price.toLocaleString('id-ID')}`;
+    },
+    handleImageError() {
+      this.imageError = true
     }
   }
 }
