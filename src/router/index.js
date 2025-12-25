@@ -11,6 +11,9 @@ import Reservasi from '../views/Reservasi.vue'
 import Berita from '../views/Berita.vue'
 import PaketWisata from '../views/paket-wisata/PaketWisataView.vue'
 import Informasi from '../views/Informasi.vue'
+import TambahPaketWisataView from '../views/paket-wisata/TambahPaketWisataView.vue'
+import DetailPaketWisataView from '../views/paket-wisata/DetailPaketWisataView.vue'
+import EditPaketWisataView from '../views/paket-wisata/EditPaketWisataView.vue'
 
 const routes = [
   {
@@ -60,17 +63,17 @@ const routes = [
   {
     path: '/wisata/tambah',
     name: 'TambahPaketWisata',
-    component: () => import('@/views/paket-wisata/TambahPaketWisataView.vue')
+    component: TambahPaketWisataView
   },
   {
     path: '/wisata/detail/:id',
     name: 'DetailPaketWisata',
-    component: () => import('@/views/paket-wisata/DetailPaketWisataView.vue')
+    component: DetailPaketWisataView
   },
   {
     path: '/wisata/edit/:id',
     name: 'EditPaketWisata',
-    component: () => import('@/views/paket-wisata/EditPaketWisataView.vue')
+    component: EditPaketWisataView
   },
   {
     path: '/informasi',
