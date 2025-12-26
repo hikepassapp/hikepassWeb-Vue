@@ -14,6 +14,7 @@ import Informasi from '../views/Informasi.vue'
 import TambahPaketWisataView from '../views/paket-wisata/TambahPaketWisataView.vue'
 import DetailPaketWisataView from '../views/paket-wisata/DetailPaketWisataView.vue'
 import EditPaketWisataView from '../views/paket-wisata/EditPaketWisataView.vue'
+import LaporanList from '../views/LaporanList.vue'
 
 const routes = [
   {
@@ -94,8 +95,12 @@ const routes = [
     path: '/user',
     name: 'user',
     component: User
+  },
+    {
+    path: '/laporan-list',
+    name: 'LaporanList',
+    component: LaporanList
   }
-
 ]
 
 const router = createRouter({
