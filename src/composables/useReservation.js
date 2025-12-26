@@ -9,7 +9,7 @@ export function useReservation() {
   const fetchReservations = async () => {
     loading.value = true;
     error.value = null;
-    
+
     try {
       const response = await reservationService.getReservations();
       const payload = response?.data?.data ?? response?.data ?? [];
@@ -30,10 +30,17 @@ export function useReservation() {
     } catch (err) {
       const message = err.response?.data?.message || 'Gagal membuat reservasi';
       error.value = message;
-      return { 
-        success: false, 
+
+      // Debug: log validation errors
+      console.error('❌ Create reservation failed:', message);
+      if (err.response?.data?.errors) {
+        console.error('Validation errors:', err.response.data.errors);
+      }
+
+      return {
+        success: false,
         message,
-        errors: err.response?.data?.errors 
+        errors: err.response?.data?.errors
       };
     }
   };
@@ -46,10 +53,10 @@ export function useReservation() {
     } catch (err) {
       const message = err.response?.data?.message || 'Gagal mengupdate reservasi';
       error.value = message;
-      return { 
-        success: false, 
+      return {
+        success: false,
         message,
-        errors: err.response?.data?.errors 
+        errors: err.response?.data?.errors
       };
     }
   };

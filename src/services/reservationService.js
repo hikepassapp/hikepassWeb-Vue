@@ -9,7 +9,11 @@ const reservationService = {
   },
 
   createReservation(data) {
-    return api.post(`${BASE_URL}/reservations`, data)
+    return api.post(`${BASE_URL}/reservations`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
 
   getReservationById(id) {
@@ -17,7 +21,14 @@ const reservationService = {
   },
 
   updateReservation(id, data) {
-    return api.put(`${BASE_URL}/reservations/${id}`, data)
+    return api.post(`${BASE_URL}/reservations/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      params: {
+        _method: 'PUT'
+      }
+    })
   },
 
   deleteReservation(id) {
@@ -30,7 +41,11 @@ const reservationService = {
   },
 
   createCheckin(data) {
-    return api.post(`${BASE_URL}/checkins`, data)
+    return api.post(`${BASE_URL}/checkins`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
 
   getCheckinById(id) {
@@ -38,7 +53,14 @@ const reservationService = {
   },
 
   updateCheckin(id, data) {
-    return api.put(`${BASE_URL}/checkins/${id}`, data)
+    return api.post(`${BASE_URL}/checkins/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      params: {
+        _method: 'PUT'
+      }
+    })
   },
 
   deleteCheckin(id) {
@@ -51,7 +73,11 @@ const reservationService = {
   },
 
   createCheckout(data) {
-    return api.post(`${BASE_URL}/checkouts`, data)
+    return api.post(`${BASE_URL}/checkouts`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
 
   getCheckoutById(id) {
@@ -59,7 +85,14 @@ const reservationService = {
   },
 
   updateCheckout(id, data) {
-    return api.put(`${BASE_URL}/checkouts/${id}`, data)
+    return api.post(`${BASE_URL}/checkouts/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      params: {
+        _method: 'PUT'
+      }
+    })
   },
 
   deleteCheckout(id) {
@@ -73,6 +106,10 @@ const reservationService = {
 
   getHistoryById(id) {
     return api.get(`${BASE_URL}/histories/${id}`)
+  },
+
+  createHistoryFromCheckout(checkoutId) {
+    return api.post(`${BASE_URL}/histories/checkout/${checkoutId}`)
   },
 
   // Mountain API

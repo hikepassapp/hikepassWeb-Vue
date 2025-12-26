@@ -39,6 +39,10 @@ export default {
     },
     computed: {
         filteredMountains() {
+            // Ensure mountains is always an array
+            if (!Array.isArray(this.mountains)) {
+                return [];
+            }
             if (!this.searchQuery) {
                 return this.mountains;
             }
@@ -64,8 +68,10 @@ export default {
             try {
                 console.log('📡 Fetching mountains from:', this.API_URL)
                 const response = await axios.get(this.API_URL)
-                console.log('✅ Mountains loaded:', response.data.length, 'items')
-                this.mountains = response.data
+                // API returns data in response.data.data format
+                const mountainsData = response.data.data || []
+                console.log('✅ Mountains loaded:', mountainsData.length, 'items')
+                this.mountains = mountainsData
             } catch (error) {
                 console.error('❌ Error fetching mountains:', error)
                 console.error('Error details:', {

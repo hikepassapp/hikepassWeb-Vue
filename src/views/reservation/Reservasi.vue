@@ -141,7 +141,7 @@
       :isOpen="showDetailModal && activeTab === 'checkout'"
       :checkout="selectedCheckinForCheckout"
       @close="closeDetailModal"
-      @finish="submitCheckoutForm"
+      @finish="finishCheckout"
     />
     
     <!-- History Modal -->

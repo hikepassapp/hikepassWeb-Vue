@@ -225,7 +225,9 @@ export default {
       imageOption: 'file',
       imagePreview: DEFAULT_IMAGE_URL,
       imageFile: null,
-      selectedFileName: ''
+      selectedFileName: '',
+      errors: {},
+      isSubmitting: false
     }
   },
   watch: {
@@ -269,6 +271,10 @@ export default {
     },
 
     handleSave() {
+      // Clear previous errors
+      this.errors = {}
+      this.isSubmitting = true
+
       // prepare the image field based on selected option
       if (this.imageOption === 'default') {
         this.formData.image = DEFAULT_IMAGE_URL
@@ -281,7 +287,6 @@ export default {
 
       this.formData.imageOption = this.imageOption
       this.$emit('save', { ...this.formData, imageFile: this.imageFile })
-      this.resetForm()
     },
 
     handleClose() {
@@ -313,6 +318,20 @@ export default {
       this.imagePreview = DEFAULT_IMAGE_URL
       this.imageFile = null
       this.selectedFileName = ''
+      this.errors = {}
+      this.isSubmitting = false
+    },
+
+    setGeneralError(message) {
+      this.errors = { general: message }
+    },
+
+    clearErrors() {
+      this.errors = {}
+    },
+
+    setSubmitting(value) {
+      this.isSubmitting = value
     }
   }
 }

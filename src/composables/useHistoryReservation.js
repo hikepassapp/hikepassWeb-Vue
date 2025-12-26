@@ -9,7 +9,7 @@ export function useHistoryReservation() {
   const fetchHistories = async () => {
     loading.value = true;
     error.value = null;
-    
+
     try {
       const response = await reservationService.getHistories();
       const payload = response?.data?.data ?? response?.data ?? [];
@@ -22,10 +22,32 @@ export function useHistoryReservation() {
     }
   };
 
+  const createHistoryFromCheckout = async (checkoutId) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await reservationService.createHistoryFromCheckout(checkoutId);
+      await fetchHistories(); // Refresh the list
+      return { success: true, data: response.data };
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Gagal membuat riwayat';
+      console.error('Error creating history:', err);
+      return {
+        success: false,
+        message: error.value,
+        errors: err.response?.data?.errors
+      };
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     histories,
     loading,
     error,
-    fetchHistories
+    fetchHistories,
+    createHistoryFromCheckout
   };
 }

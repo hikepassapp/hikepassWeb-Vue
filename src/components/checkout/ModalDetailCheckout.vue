@@ -56,7 +56,7 @@
           
           <div class="info-item" v-if="checkout.checkin.reservation.id_card">
             <strong>Foto KTP:</strong>
-            <img :src="checkout.checkin.reservation.id_card" :alt="checkout.checkin.reservation.name" class="id-card-image" />
+            <img :src="`http://127.0.0.1:8000/storage/${checkout.checkin.reservation.id_card}`" :alt="checkout.checkin.reservation.name" class="id-card-image" />
           </div>
           
           <div class="info-item">
