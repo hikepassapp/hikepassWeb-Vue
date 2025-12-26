@@ -18,13 +18,8 @@
             <td>{{ index + 1 }}</td>
             <td>
               <div class="image-cell">
-                <img 
-                  v-if="laporan.foto_bukti"
-                  :src="getImageUrl(laporan.foto_bukti)" 
-                  :alt="laporan.nama_pelapor"
-                  class="report-image"
-                  @click="viewImage(laporan.foto_bukti)"
-                />
+                <img v-if="laporan.foto_bukti" :src="getImageUrl(laporan.foto_bukti)" :alt="laporan.nama_pelapor"
+                  class="report-image" @click="viewImage(laporan.foto_bukti)" />
                 <div v-else class="no-image">
                   <i class="bi bi-image"></i>
                 </div>
@@ -40,32 +35,19 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button 
-                  class="btn-action btn-detail"
-                  @click="viewDetail(laporan)"
-                  title="Lihat Detail"
-                >
+                <button class="btn-action btn-detail" @click="viewDetail(laporan)" title="Lihat Detail">
                   <i class="bi bi-eye"></i>
                 </button>
-                <button 
-                  class="btn-action btn-edit"
-                  @click="editReport(laporan)"
-                  title="Edit"
-                >
+                <button class="btn-action btn-edit" @click="editReport(laporan)" title="Edit">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button 
-                  class="btn-action btn-delete"
-                  @click="deleteReport(laporan.id)"
-                  title="Hapus"
-                >
+                <button class="btn-action btn-delete" @click="deleteReport(laporan.id)" title="Hapus">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
             </td>
           </tr>
-          
-          <!-- Empty State -->
+
           <tr v-if="reports.length === 0">
             <td colspan="7" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
@@ -75,8 +57,7 @@
         </tbody>
       </table>
     </div>
-    
-    <!-- Modal Detail -->
+
     <div v-if="showDetailModal" class="modal-overlay" @click="closeDetailModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
@@ -111,8 +92,7 @@
         </div>
       </div>
     </div>
-    
-    <!-- Modal Image -->
+
     <div v-if="showImageModal" class="modal-overlay" @click="closeImageModal">
       <div class="modal-image-content" @click.stop>
         <button class="btn-close" @click="closeImageModal">
@@ -122,9 +102,60 @@
       </div>
     </div>
   </div>
+  <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
+        <h3>Edit Laporan</h3>
+        <button class="btn-close" @click="closeEditModal">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+
+      <form class="modal-body" @submit.prevent="submitEdit">
+        <div class="form-group">
+          <label>Nama Pelapor</label>
+          <input v-model="editForm.nama_pelapor" type="text" required />
+        </div>
+
+        <div class="form-group">
+          <label>Tanggal Kejadian</label>
+          <input v-model="editForm.tanggal_kejadian" type="date" required />
+        </div>
+
+        <div class="form-group">
+          <label>Lokasi Kejadian</label>
+          <input v-model="editForm.lokasi_kejadian" type="text" required />
+        </div>
+
+        <div class="form-group">
+          <label>Deskripsi Kejadian</label>
+          <textarea v-model="editForm.deskripsi_kejadian" rows="5" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Foto Bukti (opsional)</label>
+          <input type="file" @change="handleEditFile" />
+        </div>
+
+        <div v-if="editForm.foto_preview" class="preview-image">
+          <img :src="editForm.foto_preview" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" @click="closeEditModal">
+            Batal
+          </button>
+          <button type="submit" class="btn-submit">
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script>
+import axios from 'axios'
 const STORAGE_URL = 'http://localhost:8000/storage'
 
 export default {
@@ -140,9 +171,20 @@ export default {
       showDetailModal: false,
       showImageModal: false,
       selectedLaporan: null,
-      selectedImage: null
+      selectedImage: null,
+      showEditModal: false,
+      editForm: {
+        id: null,
+        nama_pelapor: '',
+        tanggal_kejadian: '',
+        lokasi_kejadian: '',
+        deskripsi_kejadian: '',
+        foto: null,
+        foto_preview: null
+      }
     }
   },
+
   methods: {
     formatDate(dateString) {
       const date = new Date(dateString)
@@ -151,50 +193,111 @@ export default {
       const year = date.getFullYear()
       return `${day}/${month}/${year}`
     },
-    
+
     truncateText(text, maxLength) {
       if (!text) return '-'
       if (text.length <= maxLength) return text
       return text.substring(0, maxLength) + '...'
     },
-    
+
     getImageUrl(path) {
       if (!path) return ''
       return `${STORAGE_URL}/${path}`
     },
-    
+
+    editReport(laporan) {
+      this.editForm = {
+        id: laporan.id,
+        nama_pelapor: laporan.nama_pelapor,
+        tanggal_kejadian: laporan.tanggal_kejadian.slice(0, 10),
+        lokasi_kejadian: laporan.lokasi_kejadian,
+        deskripsi_kejadian: laporan.deskripsi_kejadian,
+        foto: null,
+        foto_preview: laporan.foto_bukti
+          ? this.getImageUrl(laporan.foto_bukti)
+          : null
+      }
+      this.showEditModal = true
+    },
+
+    handleEditFile(event) {
+      const file = event.target.files[0]
+      if (file) {
+        this.editForm.foto = file
+        this.editForm.foto_preview = URL.createObjectURL(file)
+      }
+    },
+
+    async submitEdit() {
+      try {
+        const formData = new FormData()
+        formData.append('_method', 'PUT')
+        formData.append('nama_pelapor', this.editForm.nama_pelapor)
+        formData.append('tanggal_kejadian', this.editForm.tanggal_kejadian)
+        formData.append('lokasi_kejadian', this.editForm.lokasi_kejadian)
+        formData.append('deskripsi_kejadian', this.editForm.deskripsi_kejadian)
+
+        if (this.editForm.foto) {
+          formData.append('foto_bukti', this.editForm.foto)
+        }
+
+        await axios.post(
+          `http://localhost:8000/api/laporans/${this.editForm.id}`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        )
+
+        alert('Laporan berhasil diupdate')
+        this.closeEditModal()
+        this.$emit('refresh')
+      } catch (error) {
+        alert('Gagal update laporan')
+        console.error(error)
+      }
+    },
+
+    closeEditModal() {
+      this.showEditModal = false
+      this.editForm = {
+        id: null,
+        nama_pelapor: '',
+        tanggal_kejadian: '',
+        lokasi_kejadian: '',
+        deskripsi_kejadian: '',
+        foto: null,
+        foto_preview: null
+      }
+    },
+
     viewDetail(laporan) {
       this.selectedLaporan = laporan
       this.showDetailModal = true
     },
-    
+
     closeDetailModal() {
       this.showDetailModal = false
       this.selectedLaporan = null
     },
-    
+
     viewImage(imagePath) {
       this.selectedImage = imagePath
       this.showImageModal = true
     },
-    
+
     closeImageModal() {
       this.showImageModal = false
       this.selectedImage = null
     },
-    
-    editReport(laporan) {
-      this.$emit('edit-report', laporan)
-    },
-    
+
     deleteReport(id) {
       if (confirm('Apakah Anda yakin ingin menghapus laporan ini?')) {
         this.$emit('delete-report', id)
       }
     }
   },
-  emits: ['edit-report', 'delete-report']
+  emits: ['refresh', 'delete-report']
 }
+
 </script>
 
 <style scoped>
@@ -343,7 +446,6 @@ export default {
   font-size: 1.1rem;
 }
 
-/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -451,7 +553,6 @@ export default {
   color: #333;
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
   .description-cell {
     max-width: 200px;
@@ -459,29 +560,78 @@ export default {
 }
 
 @media (max-width: 768px) {
+
   .custom-table thead th,
   .custom-table tbody td {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
-  
+
   .image-cell {
     width: 70px;
     height: 60px;
   }
-  
+
   .description-cell {
     max-width: 150px;
   }
-  
+
   .btn-action {
     width: 32px;
     height: 32px;
     font-size: 0.9rem;
   }
-  
+
   .action-buttons {
     flex-wrap: wrap;
   }
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.preview-image img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-cancel {
+  background: #e5e7eb;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-submit {
+  background: #10b981;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 </style>
