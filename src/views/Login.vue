@@ -52,15 +52,12 @@
       <div class="col-lg-6 col-md-6 col-12 right-section">
         <div class="welcome-wrapper">
           <h1 class="welcome-title">
-            Selamat Datang<br />di Hikepass!
+            Selamat Datang<br />di Admin Hikepass!
           </h1>
           <p class="welcome-subtitle">
-            Register sekarang! untuk menikmati Semua<br />
-            fitur yang tersedia di Hikepass.
+            Untuk Menjadi Admin Hikepass,<br />
+            Anda Harus Menghubungi admin@hikepass.com.
           </p>
-          <button class="btn btn-signup" @click="goToSignUp">
-            SIGN UP
-          </button>
         </div>
       </div>
     </div>
@@ -100,6 +97,7 @@ export default {
         this.$router.push('/home');
 
       } catch (error) {
+        console.error("Login Error:", error);
         this.errorMessage =
           error.response?.data?.message ||
           'Login gagal. Periksa email dan password.';
@@ -264,23 +262,7 @@ export default {
   opacity: 0.95;
 }
 
-.btn-signup {
-  background-color: white;
-  color: #1a5555;
-  border: none;
-  border-radius: 30px;
-  padding: 0.9rem 4rem;
-  font-weight: 600;
-  font-size: 1rem;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-}
 
-.btn-signup:hover {
-  background-color: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
 
 /* Alert Styles */
 .alert {
@@ -322,8 +304,7 @@ export default {
     font-size: 2rem;
   }
 
-  .btn-signin,
-  .btn-signup {
+  .btn-signin {
     padding: 0.8rem 3rem;
   }
 }

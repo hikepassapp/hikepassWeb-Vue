@@ -31,12 +31,14 @@ const routes = [
   {
     path: '/login',
     name: 'login',
-    component: Login
+    component: Login,
+    meta: { guest: true }
   },
   {
     path: '/register',
     name: 'register',
-    component: Register
+    component: Register,
+    meta: { guest: true }
   },
   {
     path: '/register-data',
@@ -123,7 +125,7 @@ const routes = [
     name: 'user',
     component: User
   },
-    {
+  {
     path: '/laporan-list',
     name: 'LaporanList',
     component: LaporanList
@@ -131,17 +133,20 @@ const routes = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: ForgotPassword
+    component: ForgotPassword,
+    meta: { guest: true }
   },
   {
-    path: '/verify-otp',
+    path: '/verify-otp/:email',
     name: 'VerifyOTP',
-    component: VerifyOTP
+    component: VerifyOTP,
+    meta: { guest: true }
   },
   {
     path: '/reset-password',
     name: 'ResetPassword',
-    component: ResetPassword
+    component: ResetPassword,
+    meta: { guest: true }
   }
 ]
 

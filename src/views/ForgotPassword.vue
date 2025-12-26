@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import apiClient from '../api/index.js';
+import axios from 'axios';
 
 export default {
   name: 'ForgotPassword',
@@ -78,8 +78,8 @@ export default {
       email: '',
       loading: false,
       errorMessage: '',
-      successMessage: '',
-    };
+      successMessage: ''
+    }
   },
   methods: {
     async handleForgotPassword() {
@@ -88,34 +88,35 @@ export default {
       this.successMessage = '';
 
       try {
-        await apiClient.post('/forgot-password', {
-          email: this.email,
+        const response = await axios.post('http://127.0.0.1:8000/api/forgot-password', {
+          email: this.email
         });
 
         this.successMessage = 'Kode OTP telah dikirim ke email Anda!';
-
-        // Redirect ke halaman Verify OTP
+        
+        // Redirect ke halaman Verify OTP setelah 2 detik
         setTimeout(() => {
           this.$router.push({
             name: 'VerifyOTP',
-            params: { email: this.email },
+            params: { email: this.email }
           });
         }, 2000);
 
       } catch (error) {
-        this.errorMessage =
-          error.response?.data?.message ||
-          'Email tidak ditemukan atau terjadi kesalahan.';
+        if (error.response && error.response.data) {
+          this.errorMessage = error.response.data.message || 'Email tidak ditemukan';
+        } else {
+          this.errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+        }
       } finally {
         this.loading = false;
       }
     },
-
     goToLogin() {
       this.$router.push('/login');
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
 <style scoped>
