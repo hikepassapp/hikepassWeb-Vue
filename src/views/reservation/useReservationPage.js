@@ -28,25 +28,41 @@ export function useReservationPage() {
   const mountainsState = useMountains();
 
   // Search functionality
-  const { searchQuery, filteredData: filteredReservations } = useSearch(
+  const { searchQuery, filteredData: filteredReservationsRaw } = useSearch(
     reservationState.reservations,
     ['name', 'nik', 'phone_number', 'id']
   );
+  
+  const filteredReservations = computed(() => {
+    return [...filteredReservationsRaw.value].reverse();
+  });
 
-  const { filteredData: filteredCheckIns } = useSearch(
+  const { filteredData: filteredCheckInsRaw } = useSearch(
     checkinState.checkIns,
     ['reservation.name', 'reservation.nik', 'reservation_id']
   );
+  
+  const filteredCheckIns = computed(() => {
+    return [...filteredCheckInsRaw.value].reverse();
+  });
 
-  const { filteredData: filteredCheckOuts } = useSearch(
+  const { filteredData: filteredCheckOutsRaw } = useSearch(
     checkoutState.checkOuts,
     ['checkin.reservation.name', 'checkin.reservation.nik', 'checkin.reservation_id']
   );
+  
+  const filteredCheckOuts = computed(() => {
+    return [...filteredCheckOutsRaw.value].reverse();
+  });
 
-  const { filteredData: filteredHistories } = useSearch(
+  const { filteredData: filteredHistoriesRaw } = useSearch(
     historyState.histories,
     ['checkout.checkin.reservation.name', 'checkout.checkin.reservation.nik']
   );
+  
+  const filteredHistories = computed(() => {
+    return [...filteredHistoriesRaw.value].reverse();
+  });
 
   // Current filtered data based on active tab
   const currentFilteredData = computed(() => {
