@@ -329,13 +329,13 @@
 
 <script>
 import axios from 'axios'
-import Sidebar from '../components/Sidebar.vue'
-import Navbar from '../components/Navbar.vue'
-import TabNavigation from '../components/TabNavigation.vue'
-import TableReservasi from '../components/TableReservasi.vue'
-import TableCheckIn from '../components/TableCheckIn.vue'
-import TableCheckOut from '../components/TableCheckOut.vue'
-import Pagination from '../components/Pagination.vue'
+import Sidebar from '../../components/Sidebar.vue'
+import Navbar from '../../components/Navbar.vue'
+import TabNavigation from '../../components/TabNavigation.vue'
+import TableReservasi from '../../components/reservation/TableReservasi.vue'
+import TableCheckIn from '../../components/checkin/TableCheckIn.vue'
+import TableCheckOut from '../../components/checkout/TableCheckOut.vue'
+import Pagination from '../../components/Pagination.vue'
 
 // Configure axios base URL
 const api = axios.create({
