@@ -1,10 +1,10 @@
 <template>
   <div class="laporan-list-page">
     <Sidebar />
-    
+
     <div class="main-content">
       <Navbar pageTitle="Daftar Laporan" />
-      
+
       <div class="content-wrapper">
         <div class="page-header">
           <h2>Daftar Laporan</h2>
@@ -13,18 +13,13 @@
             Buat Laporan Baru
           </button>
         </div>
-        
+
         <div v-if="isLoading" class="loading-state">
           <div class="spinner"></div>
           <p>Memuat data...</p>
         </div>
-        
-        <TableLaporan 
-          v-else
-          :reports="laporans"
-          @edit-report="handleEdit"
-          @delete-report="handleDelete"
-        />
+
+        <TableLaporan v-else :reports="laporans" @refresh="fetchLaporans" @delete-report="handleDelete" />
       </div>
     </div>
   </div>
@@ -69,15 +64,11 @@ export default {
         this.isLoading = false
       }
     },
-    
+
     goToCreate() {
       this.$router.push('/laporan/create')
     },
-    
-    handleEdit(laporan) {
-      this.$router.push(`/laporan/edit/${laporan.id}`)
-    },
-    
+
     async handleDelete(id) {
       try {
         const response = await axios.delete(`${API_URL}/${id}`)
@@ -175,8 +166,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-state p {
@@ -195,21 +191,21 @@ export default {
   .main-content {
     margin-left: 0;
   }
-  
+
   .content-wrapper {
     padding: 1.5rem;
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
   }
-  
+
   .page-header h2 {
     font-size: 1.5rem;
   }
-  
+
   .btn-add {
     justify-content: center;
   }
