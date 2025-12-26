@@ -33,9 +33,11 @@
               </div>
             </td>
             <td>
-              <span class="badge-jenis">{{ berita.jenis }}</span>
+              <span class="badge-jenis" :class="jenisClass(berita.jenis)">
+                {{ berita.jenis }}
+              </span>
             </td>
-            <td>{{ berita.tanggalTerbit }}</td>
+            <td>{{ formatDate(berita.tanggalTerbit) }}</td>
             <td>{{ berita.penulis }}</td>
             <td>
               <div class="action-buttons">
@@ -48,7 +50,7 @@
                 </button>
                 <button 
                   class="btn-action btn-delete"
-                  @click="$emit('delete-berita', berita.id)"
+                  @click="$emit('delete-berita', berita.id, berita.judul)"
                   title="Hapus"
                 >
                   <i class="bi bi-trash"></i>
@@ -61,7 +63,7 @@
           <tr v-if="beritaList.length === 0">
             <td colspan="7" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
-              <p>Belum ada data berita</p>
+              <p>Belum ada data berita/event</p>
             </td>
           </tr>
         </tbody>
@@ -71,6 +73,8 @@
 </template>
 
 <script>
+import { formatDate } from '@/utils/formatters';
+
 export default {
   name: 'TableBerita',
   props: {
@@ -86,6 +90,10 @@ export default {
   methods: {
     handleImageError(e) {
       e.target.src = 'https://via.placeholder.com/100x80?text=No+Image';
+    },
+    formatDate,
+    jenisClass(jenis) {
+      return jenis.toLowerCase() === 'event' ? 'badge-event' : 'badge-berita';
     }
   },
   emits: ['view-detail', 'delete-berita', 'view-image']
@@ -162,13 +170,22 @@ export default {
 }
 
 .badge-jenis {
-  background-color: #ffc107;
-  color: #000;
   padding: 0.35rem 0.75rem;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 500;
   display: inline-block;
+  text-transform: capitalize;
+}
+
+.badge-berita {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.badge-event {
+  background-color: #ffc107;
+  color: #000;
 }
 
 .action-buttons {
@@ -226,7 +243,6 @@ export default {
   font-size: 1.1rem;
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
   .title-cell {
     max-width: 200px;

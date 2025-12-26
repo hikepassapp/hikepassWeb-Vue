@@ -293,7 +293,8 @@
 }
 
 .modal-icon-warning,
-.modal-icon-success {
+.modal-icon-success,
+.modal-icon-error {
     width: 80px;
     height: 80px;
     margin: 0 auto 1.5rem;
@@ -312,6 +313,11 @@
 .modal-icon-success {
     background-color: #d1fae5;
     color: #10b981;
+}
+
+.modal-icon-error {
+    background-color: #fee2e2;
+    color: #ef4444;
 }
 
 .modal-message {
@@ -357,72 +363,22 @@
     background-color: #145f5f;
 }
 
-/* Error Handling Styles */
-.alert {
-    padding: 1rem;
-    margin-bottom: 1rem;
+.btn-default-img {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
     border-radius: 8px;
+    background-color: #f8f9fa;
+    color: #1a7a7a;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
-    font-weight: 500;
-    animation: slideDown 0.3s ease-out;
+    justify-content: center;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.alert-danger {
-    background-color: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-}
-
-.alert-success {
-    background-color: #dcfce7;
-    color: #16a34a;
-    border: 1px solid #86efac;
-}
-
-.is-invalid {
-    border: 1px solid #dc2626 !important;
-    background-color: #fef2f2 !important;
-}
-
-.invalid-feedback {
-    display: block;
-    color: #dc2626;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    font-weight: 500;
-}
-
-.form-control:focus.is-invalid {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25);
-}
-
-/* Disabled state for submit buttons */
-.btn-save:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.btn-cancel:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* Loading spinner */
-.spinner-border-sm {
-    width: 1rem;
-    height: 1rem;
-    border-width: 0.25em;
+.btn-default-img:hover {
+    background-color: #1a7a7a;
+    color: white;
+    border-color: #1a7a7a;
 }

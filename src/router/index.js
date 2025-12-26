@@ -7,10 +7,17 @@ import DataGunung from '../views/dataGunung/DataGunung.vue'
 import Laporan from '../views/Laporan.vue'
 import DaftarLaporan from '../views/DaftarLaporan.vue'
 import User from '../views/User.vue'
-import Reservasi from '../views/Reservasi.vue'
-import Berita from '../views/Berita.vue'
-import PaketWisata from '../views/PaketWisata.vue'
+import Reservasi from '../views/reservation/Reservasi.vue'
+import Berita from '../views/berita-event/BeritaEventView.vue'
+import PaketWisata from '../views/paket-wisata/PaketWisataView.vue'
 import Informasi from '../views/Informasi.vue'
+import TambahPaketWisataView from '../views/paket-wisata/TambahPaketWisataView.vue'
+import DetailPaketWisataView from '../views/paket-wisata/DetailPaketWisataView.vue'
+import EditPaketWisataView from '../views/paket-wisata/EditPaketWisataView.vue'
+import BeritaEventView from '../views/berita-event/BeritaEventView.vue'
+import TambahBeritaEventView from '../views/berita-event/TambahBeritaEventView.vue'
+import DetailBeritaEventView from '../views/berita-event/DetailBeritaEventView.vue'
+import EditBeritaEventView from '../views/berita-event/EditBeritaEventView.vue'
 
 const routes = [
   {
@@ -58,9 +65,44 @@ const routes = [
     component: PaketWisata
   },
   {
+    path: '/wisata/tambah',
+    name: 'TambahPaketWisata',
+    component: TambahPaketWisataView
+  },
+  {
+    path: '/wisata/detail/:id',
+    name: 'DetailPaketWisata',
+    component: DetailPaketWisataView
+  },
+  {
+    path: '/wisata/edit/:id',
+    name: 'EditPaketWisata',
+    component: EditPaketWisataView
+  },
+  {
     path: '/informasi',
     name: 'Informasi',
     component: Informasi
+  },
+  {
+    path: '/berita-event',
+    name: 'BeritaEvent',
+    component: BeritaEventView
+  },
+  {
+    path: '/berita/tambah',
+    name: 'TambahBeritaEvent',
+    component: TambahBeritaEventView
+  },
+  {
+    path: '/berita/detail/:id',
+    name: 'DetailBeritaEvent',
+    component: DetailBeritaEventView
+  },
+  {
+    path: '/berita/edit/:id',
+    name: 'EditBeritaEvent',
+    component: EditBeritaEventView
   },
   {
     path: '/laporan',
