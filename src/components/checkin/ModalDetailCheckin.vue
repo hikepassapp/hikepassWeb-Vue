@@ -51,7 +51,11 @@
           
           <div class="info-item" v-if="checkin.reservation.id_card">
             <strong>Foto KTP:</strong>
-            <img :src="`http://127.0.0.1:8000/storage/${checkin.reservation.id_card}`" :alt="checkin.reservation.name" class="id-card-image" />
+            <img
+              :src="buildImageUrl(checkin.reservation.id_card)"
+              :alt="checkin.reservation.name"
+              class="id-card-image"
+            />
           </div>
           
           <div class="info-item">
@@ -98,6 +102,10 @@ export default {
     },
     formatGender(gender) {
       return gender === 'male' ? 'Laki-laki' : (gender === 'female' ? 'Perempuan' : '-')
+    },
+    buildImageUrl(path) {
+      if (!path) return ''
+      return path.startsWith('http') ? path : `http://127.0.0.1:8000/storage/${path}`
     },
     closeModal() {
       this.$emit('close')
@@ -207,10 +215,67 @@ export default {
 
 .id-card-image {
   width: 100%;
-  max-height: 200px;
-  object-fit: cover;
+  max-height: 250px;
+  object-fit: contain;
   border-radius: 8px;
   margin-top: 0.5rem;
+  background: #f7f7f7;
+}
+
+.image-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+}
+
+.image-preview-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+.image-preview-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(0, 0, 0, 0.08);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.image-preview-close:hover {
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.image-preview-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.image-preview-img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+  max-height: 70vh;
+  background: #f7f7f7;
 }
 
 .modal-actions {

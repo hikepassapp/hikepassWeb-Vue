@@ -7,24 +7,10 @@ const API_BASE_URL = 'http://127.0.0.1:5000/api';
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
+    'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
   timeout: 15000
 });
-
-// Interceptor untuk handle FormData
-apiClient.interceptors.request.use(
-  (config) => {
-    // Jika FormData, biarkan browser set Content-Type dengan boundary
-    if (config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
-    } else {
-      // Untuk JSON request, set Content-Type
-      config.headers['Content-Type'] = 'application/json';
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 export default apiClient;

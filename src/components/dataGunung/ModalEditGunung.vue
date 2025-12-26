@@ -309,7 +309,7 @@ export default {
         formData.append('image_type', 'url')
       } else if (this.imageOption === 'default') {
         formData.append('image_path', DEFAULT_IMAGE_PATH)
-        formData.append('image_type', 'path')
+        formData.append('image_type', 'default')
       } else {
         formData.append('image_path', this.formData.image)
         formData.append('image_type', 'keep')
