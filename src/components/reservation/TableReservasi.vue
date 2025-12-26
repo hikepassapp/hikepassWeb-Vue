@@ -8,9 +8,9 @@
             <th>ID Reservasi</th>
             <th>Nama</th>
             <th>NIK</th>
+            <th>No. Telepon</th>
             <th>Gunung</th>
             <th>Tanggal Mulai</th>
-            <th>No. Telepon</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -20,9 +20,9 @@
             <td>{{ reservation.id }}</td>
             <td>{{ reservation.name }}</td>
             <td>{{ reservation.nik }}</td>
+            <td>{{ reservation.phone_number }}</td>
             <td>{{ reservation.mountain?.name || '-' }}</td>
             <td>{{ formatDate(reservation.start_date) }}</td>
-            <td>{{ reservation.phone_number }}</td>
             <td>
               <div class="action-buttons">
                 <button 
@@ -109,7 +109,7 @@ export default {
 
 .custom-table thead th {
   padding: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
   text-align: left;
   border-bottom: 2px solid #d0d0d0;
