@@ -19,6 +19,9 @@ import TambahBeritaEventView from '../views/berita-event/TambahBeritaEventView.v
 import DetailBeritaEventView from '../views/berita-event/DetailBeritaEventView.vue'
 import EditBeritaEventView from '../views/berita-event/EditBeritaEventView.vue'
 import LaporanList from '../views/LaporanList.vue'
+import ForgotPassword from '../views/ForgotPassword.vue'
+import VerifyOTP from '../views/VerifyOTP.vue'
+import ResetPassword from '../views/ResetPassword.vue'
 
 const routes = [
   {
@@ -124,6 +127,21 @@ const routes = [
     path: '/laporan-list',
     name: 'LaporanList',
     component: LaporanList
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword
+  },
+  {
+    path: '/verify-otp',
+    name: 'VerifyOTP',
+    component: VerifyOTP
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword
   }
 ]
 
