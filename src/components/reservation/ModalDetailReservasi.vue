@@ -51,7 +51,11 @@
           
           <div class="info-item" v-if="reservation.id_card">
             <strong>Foto KTP:</strong>
-            <img :src="reservation.id_card" :alt="reservation.name" class="id-card-image" />
+            <img
+              :src="buildImageUrl(reservation.id_card)"
+              :alt="reservation.name"
+              class="id-card-image"
+            />
           </div>
         </div>
 
@@ -93,6 +97,10 @@ export default {
     },
     formatGender(gender) {
       return gender === 'male' ? 'Laki-laki' : (gender === 'female' ? 'Perempuan' : '-')
+    },
+    buildImageUrl(path) {
+      if (!path) return ''
+      return path.startsWith('http') ? path : `http://127.0.0.1:8000/storage/${path}`
     },
     closeModal() {
       this.$emit('close')
@@ -200,10 +208,11 @@ export default {
 
 .id-card-image {
   width: 100%;
-  max-height: 200px;
-  object-fit: cover;
+  max-height: 250px;
+  object-fit: contain;
   border-radius: 8px;
   margin-top: 0.5rem;
+  background: #f7f7f7;
 }
 
 .modal-actions {
