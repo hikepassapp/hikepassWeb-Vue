@@ -81,7 +81,7 @@
         />
         
         <!-- Pagination -->
-        <div v-if="!loading && totalPages > 1" class="pagination-wrapper">
+        <div v-if="!loading" class="pagination-wrapper">
           <Pagination 
             :currentPage="currentPage"
             :totalPages="totalPages"
