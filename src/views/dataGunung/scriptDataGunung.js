@@ -126,7 +126,7 @@ export default {
                     } else {
                         // default path
                         payload.append('image_path', formData.image || 'mountains/defaultMountainPics.jpg')
-                        payload.append('image_type', 'path')
+                        payload.append('image_type', 'default')
                     }
                 }
 
@@ -151,7 +151,7 @@ export default {
                 this.feedbackMessage = 'Gagal menambahkan data gunung: ' + (error.response?.data?.message || error.message)
                 this.feedbackType = 'error'
                 this.showFeedbackModal = true
-                this.$refs.modalAddGunung?.setGeneralError?.(errorMessage)
+                this.$refs.modalAddGunung?.setGeneralError?.(this.feedbackMessage)
             } finally {
                 this.$refs.modalAddGunung?.setSubmitting?.(false)
             }
