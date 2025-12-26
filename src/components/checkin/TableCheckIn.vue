@@ -5,24 +5,24 @@
         <thead>
           <tr>
             <th>No</th>
-            <th>Kode Reservasi</th>
+            <th>ID Reservasi</th>
             <th>Nama</th>
+            <th>NIK</th>
+            <th>No. Telepon</th>
+            <th>Gunung</th>
             <th>Tanggal Check-In</th>
-            <th>Jumlah Pendaki</th>
-            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(checkin, index) in checkIns" :key="checkin.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ checkin.kodeReservasi }}</td>
-            <td>{{ checkin.nama }}</td>
-            <td>{{ formatDate(checkin.tanggalCheckIn) }}</td>
-            <td>{{ checkin.jumlahPendaki }}</td>
-            <td>
-              <span class="badge badge-success">{{ checkin.status }}</span>
-            </td>
+             <td>{{ checkin.reservation?.id || '-' }}</td>
+            <td>{{ checkin.reservation?.name || '-' }}</td>
+            <td>{{ checkin.reservation?.nik || '-' }}</td>
+            <td>{{ checkin.reservation?.phone_number || '-' }}</td>
+            <td>{{ checkin.reservation?.mountain?.name || '-' }}</td>
+            <td>{{ formatDate(checkin.checkin_date) }}</td>
             <td>
               <div class="action-buttons">
                 <button 
@@ -38,7 +38,7 @@
           
           <!-- Empty State -->
           <tr v-if="checkIns.length === 0">
-            <td colspan="7" class="text-center empty-state">
+            <td colspan="8" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
               <p>Belum ada data check-in</p>
             </td>
@@ -95,7 +95,7 @@ export default {
 
 .custom-table thead th {
   padding: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
   text-align: left;
   border-bottom: 2px solid #d0d0d0;
@@ -115,19 +115,6 @@ export default {
 
 .custom-table tbody tr:hover {
   background-color: #f8f9fa;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.badge-success {
-  background-color: #d4f4dd;
-  color: #10b981;
 }
 
 .action-buttons {

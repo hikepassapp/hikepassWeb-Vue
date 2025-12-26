@@ -1,12 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use Laravel dev server base URL (no trailing /api)
+// Final request becomes: baseURL + '/api/...' from service files
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  timeout: 15000
 });
 
 export default apiClient;

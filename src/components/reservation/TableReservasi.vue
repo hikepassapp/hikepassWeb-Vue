@@ -5,42 +5,56 @@
         <thead>
           <tr>
             <th>No</th>
-            <th>Kode Reservasi</th>
+            <th>ID Reservasi</th>
             <th>Nama</th>
-            <th>Tanggal Check-Out</th>
-            <th>Jumlah Pendaki</th>
-            <th>Status</th>
+            <th>NIK</th>
+            <th>No. Telepon</th>
+            <th>Gunung</th>
+            <th>Tanggal Mulai</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(checkout, index) in checkOuts" :key="checkout.id">
+          <tr v-for="(reservation, index) in reservations" :key="reservation.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ checkout.kodeReservasi }}</td>
-            <td>{{ checkout.nama }}</td>
-            <td>{{ formatDate(checkout.tanggalCheckOut) }}</td>
-            <td>{{ checkout.jumlahPendaki }}</td>
-            <td>
-              <span class="badge badge-info">{{ checkout.status }}</span>
-            </td>
+            <td>{{ reservation.id }}</td>
+            <td>{{ reservation.name }}</td>
+            <td>{{ reservation.nik }}</td>
+            <td>{{ reservation.phone_number }}</td>
+            <td>{{ reservation.mountain?.name || '-' }}</td>
+            <td>{{ formatDate(reservation.start_date) }}</td>
             <td>
               <div class="action-buttons">
                 <button 
                   class="btn-action btn-detail"
-                  @click="$emit('view-detail', checkout)"
+                  @click="$emit('view-detail', reservation)"
                   title="Lihat Detail"
                 >
                   <i class="bi bi-arrow-right"></i>
+                </button>
+                <button 
+                  class="btn-action btn-edit"
+                  @click="$emit('edit-reservasi', reservation)"
+                  title="Edit"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button 
+                  class="btn-action btn-delete"
+                  @click="$emit('delete-reservasi', reservation.id)"
+                  title="Hapus"
+                >
+                  <i class="bi bi-trash"></i>
                 </button>
               </div>
             </td>
           </tr>
           
           <!-- Empty State -->
-          <tr v-if="checkOuts.length === 0">
-            <td colspan="7" class="text-center empty-state">
+          <tr v-if="reservations.length === 0">
+            <td colspan="8" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
-              <p>Belum ada data check-out</p>
+              <p>Belum ada data reservasi</p>
             </td>
           </tr>
         </tbody>
@@ -51,13 +65,14 @@
 
 <script>
 export default {
-  name: 'TableCheckOut',
+  name: 'TableReservasi',
   props: {
-    checkOuts: {
+    reservations: {
       type: Array,
       required: true
     }
   },
+  emits: ['view-detail', 'edit-reservasi', 'delete-reservasi'],
   methods: {
     formatDate(dateString) {
       const date = new Date(dateString);
@@ -66,8 +81,7 @@ export default {
       const year = date.getFullYear();
       return `${day}/${month}/${year}`;
     }
-  },
-  emits: ['view-detail']
+  }
 }
 </script>
 
@@ -95,7 +109,7 @@ export default {
 
 .custom-table thead th {
   padding: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
   text-align: left;
   border-bottom: 2px solid #d0d0d0;
@@ -115,19 +129,6 @@ export default {
 
 .custom-table tbody tr:hover {
   background-color: #f8f9fa;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.badge-info {
-  background-color: #dbeafe;
-  color: #3b82f6;
 }
 
 .action-buttons {
@@ -155,6 +156,26 @@ export default {
 
 .btn-detail:hover {
   background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.btn-edit {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #d97706;
+  transform: translateY(-2px);
+}
+
+.btn-delete {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
   transform: translateY(-2px);
 }
 
