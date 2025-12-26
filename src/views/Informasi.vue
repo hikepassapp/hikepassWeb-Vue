@@ -1,6 +1,6 @@
 <template>
   <div class="informasi-page">
-    <!-- Sidebar Component (sudah ada) -->
+    <!-- Sidebar Component -->
     <Sidebar />
 
     <!-- Main Content Area -->
@@ -13,80 +13,115 @@
         <!-- Page Header -->
         <div class="page-header">
           <h2 class="page-title">Daftar Informasi</h2>
-          <button class="btn-add" @click="tambahInformasi">
+          <button class="btn-add" @click="openTambahModal">
             + Tambah Informasi
           </button>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Memuat data...</p>
+        </div>
+
         <!-- Cards Grid -->
-        <div class="cards-grid">
+        <div v-else-if="informasiData.length > 0" class="cards-grid">
           <InformasiCard 
             v-for="info in informasiData" 
             :key="info.id"
             :info="info"
             @edit="editInformasi"
-            @delete="deleteInformasi"
+            @delete="confirmDelete"
           />
         </div>
 
         <!-- Empty State -->
-        <div v-if="informasiData.length === 0" class="empty-state">
+        <div v-else class="empty-state">
           <i class="bi bi-info-circle"></i>
           <p>Belum ada data informasi</p>
-          <button class="btn-add" @click="tambahInformasi">
+          <button class="btn-add" @click="openTambahModal">
             + Tambah Informasi Pertama
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Modal for Edit -->
-    <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+    <!-- Modal for Add/Edit -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
       <div class="modal-detail" @click.stop>
-        <button class="modal-close" @click="closeEditModal">
+        <button class="modal-close" @click="closeModal">
           <i class="bi bi-x-lg"></i>
         </button>
-        <h3 class="modal-title">Edit Informasi</h3>
-        <div v-if="selectedInfo" class="form-content">
+        <h3 class="modal-title">{{ isEditMode ? 'Edit Informasi' : 'Tambah Informasi' }}</h3>
+        
+        <form @submit.prevent="saveInformasi" class="form-content">
           <div class="form-group">
-            <label>Judul</label>
+            <label>Judul <span class="required">*</span></label>
             <input 
               type="text" 
-              v-model="editForm.judul" 
+              v-model="form.judul" 
               class="form-control"
               placeholder="Masukkan judul informasi"
+              required
             />
           </div>
 
           <div class="form-group">
-            <label>Deskripsi</label>
+            <label>Deskripsi <span class="required">*</span></label>
             <textarea 
-              v-model="editForm.deskripsi" 
+              v-model="form.deskripsi" 
               class="form-control"
               rows="5"
               placeholder="Masukkan deskripsi informasi"
+              required
             ></textarea>
           </div>
 
           <div class="form-group">
-            <label>URL Gambar</label>
+            <label>Gambar <span class="required">*</span></label>
             <input 
-              type="text" 
-              v-model="editForm.gambar" 
+              type="file" 
+              @change="handleFileChange"
               class="form-control"
-              placeholder="https://example.com/image.jpg"
+              accept="image/*"
+              :required="!isEditMode"
             />
+            <small class="form-text">Format: JPG, PNG, JPEG (Max: 2MB)</small>
+            
+            <!-- Preview Image -->
+            <div v-if="imagePreview" class="image-preview">
+              <img :src="imagePreview" alt="Preview" />
+            </div>
           </div>
 
           <div class="form-actions">
-            <button class="btn-cancel" @click="closeEditModal">
+            <button type="button" class="btn-cancel" @click="closeModal">
               Batal
             </button>
-            <button class="btn-save" @click="saveInformasi">
+            <button type="submit" class="btn-save" :disabled="saving">
               <i class="bi bi-check-circle me-2"></i>
-              Simpan
+              {{ saving ? 'Menyimpan...' : 'Simpan' }}
             </button>
           </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
+      <div class="modal-confirm" @click.stop>
+        <div class="modal-icon-danger">
+          <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h3 class="modal-title">Konfirmasi Hapus</h3>
+        <p class="modal-message">Apakah Anda yakin ingin menghapus informasi ini?</p>
+        <div class="form-actions">
+          <button class="btn-cancel" @click="showDeleteModal = false">
+            Batal
+          </button>
+          <button class="btn-delete-confirm" @click="deleteInformasi" :disabled="deleting">
+            {{ deleting ? 'Menghapus...' : 'Hapus' }}
+          </button>
         </div>
       </div>
     </div>
@@ -94,12 +129,12 @@
 </template>
 
 <script>
-// Import komponen yang sudah ada
+import axios from 'axios';
 import Sidebar from '../components/Sidebar.vue';
 import Navbar from '../components/Navbar.vue';
-
-// Import komponen baru
 import InformasiCard from '../components/InformasiCard.vue';
+
+const API_URL = 'http://localhost:8000/api/informasi';
 
 export default {
   name: 'InformasiView',
@@ -110,97 +145,184 @@ export default {
   },
   data() {
     return {
-      showEditModal: false,
+      informasiData: [],
+      loading: false,
+      saving: false,
+      deleting: false,
+      showModal: false,
+      showDeleteModal: false,
+      isEditMode: false,
       selectedInfo: null,
-      editForm: {
+      deleteId: null,
+      imagePreview: null,
+      form: {
         judul: '',
         deskripsi: '',
-        gambar: ''
-      },
-      informasiData: [
-        {
-          id: 1,
-          judul: 'Peraturan',
-          deskripsi: 'Persiapan Fisik dan Mental: Pastikan kondisi fisik Anda prima sebelum mendaki. Lakukan latihan rutin seperti jogging, bersepeda, atau hiking ringan untuk meningkatkan stamina. Selain itu, persiapkan mental Anda untuk menghadapi tantangan selama pendakian.',
-          gambar: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400'
-        },
-        {
-          id: 2,
-          judul: 'Tips',
-          deskripsi: 'Persiapan Fisik dan Mental: Pastikan kondisi fisik Anda prima sebelum mendaki. Lakukan latihan rutin seperti jogging, bersepeda, atau hiking ringan untuk meningkatkan stamina.',
-          gambar: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400'
-        },
-        {
-          id: 3,
-          judul: 'Umum',
-          deskripsi: 'Persiapan Fisik dan Mental: Pastikan kondisi fisik Anda prima sebelum mendaki. Lakukan latihan rutin seperti jogging, bersepeda, atau hiking ringan untuk meningkatkan stamina.',
-          gambar: 'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=400'
-        },
-        {
-          id: 4,
-          judul: 'Keselamatan',
-          deskripsi: 'Keselamatan adalah prioritas utama dalam setiap pendakian. Selalu patuhi instruksi dari pemandu, jangan memaksakan diri jika kondisi tidak memungkinkan, dan selalu bawa perlengkapan P3K.',
-          gambar: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=400'
-        },
-        {
-          id: 5,
-          judul: 'Perlengkapan',
-          deskripsi: 'Bawa perlengkapan yang sesuai dengan durasi dan kondisi medan. Carrier, sleeping bag, tenda, pakaian hangat, sepatu tracking, dan peralatan masak adalah beberapa item penting yang harus dibawa.',
-          gambar: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=400'
-        },
-        {
-          id: 6,
-          judul: 'Etika Pendaki',
-          deskripsi: 'Jaga kebersihan gunung dengan tidak membuang sampah sembarangan. Hormati budaya lokal dan sesama pendaki. Leave no trace adalah prinsip yang harus dipegang oleh setiap pendaki.',
-          gambar: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400'
-        }
-      ]
+        gambar: null
+      }
     }
   },
+  mounted() {
+    this.fetchInformasi();
+  },
   methods: {
+    async fetchInformasi() {
+      this.loading = true;
+      try {
+        const response = await axios.get(API_URL);
+        this.informasiData = response.data.data || response.data;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        this.showNotification('Gagal memuat data', 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    openTambahModal() {
+      this.isEditMode = false;
+      this.resetForm();
+      this.showModal = true;
+    },
+
     editInformasi(info) {
+      this.isEditMode = true;
       this.selectedInfo = info;
-      this.editForm = {
+      this.form = {
         judul: info.judul,
         deskripsi: info.deskripsi,
-        gambar: info.gambar
+        gambar: null
       };
-      this.showEditModal = true;
+      
+      // Set preview image for edit mode
+      if (info.gambar) {
+        if (info.gambar.startsWith('http')) {
+          this.imagePreview = info.gambar;
+        } else {
+          this.imagePreview = `http://localhost:8000/storage/${info.gambar}`;
+        }
+      }
+      
+      this.showModal = true;
     },
-    deleteInformasi(id) {
-      if (confirm('Apakah Anda yakin ingin menghapus informasi ini?')) {
-        this.informasiData = this.informasiData.filter(info => info.id !== id);
-        // Bisa tambahkan notifikasi sukses di sini
-        alert('Informasi berhasil dihapus!');
+
+    handleFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          this.showNotification('Ukuran file maksimal 2MB', 'error');
+          event.target.value = '';
+          return;
+        }
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+          this.showNotification('Format file harus JPG, JPEG, atau PNG', 'error');
+          event.target.value = '';
+          return;
+        }
+
+        this.form.gambar = file;
+
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
     },
-    closeEditModal() {
-      this.showEditModal = false;
-      this.selectedInfo = null;
-      this.editForm = {
+
+    async saveInformasi() {
+      this.saving = true;
+      
+      try {
+        const formData = new FormData();
+        formData.append('judul', this.form.judul);
+        formData.append('deskripsi', this.form.deskripsi);
+        
+        if (this.form.gambar) {
+          formData.append('gambar', this.form.gambar);
+        }
+
+        let response;
+        if (this.isEditMode) {
+          // Update
+          formData.append('_method', 'PUT');
+          response = await axios.post(`${API_URL}/${this.selectedInfo.id}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        } else {
+          // Create
+          response = await axios.post(API_URL, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        }
+
+        this.showNotification(
+          this.isEditMode ? 'Informasi berhasil diperbarui!' : 'Informasi berhasil ditambahkan!',
+          'success'
+        );
+        
+        this.closeModal();
+        this.fetchInformasi();
+      } catch (error) {
+        console.error('Error saving data:', error);
+        this.showNotification(
+          error.response?.data?.message || 'Gagal menyimpan data',
+          'error'
+        );
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    confirmDelete(id) {
+      this.deleteId = id;
+      this.showDeleteModal = true;
+    },
+
+    async deleteInformasi() {
+      this.deleting = true;
+      
+      try {
+        await axios.delete(`${API_URL}/${this.deleteId}`);
+        this.showNotification('Informasi berhasil dihapus!', 'success');
+        this.showDeleteModal = false;
+        this.deleteId = null;
+        this.fetchInformasi();
+      } catch (error) {
+        console.error('Error deleting data:', error);
+        this.showNotification('Gagal menghapus data', 'error');
+      } finally {
+        this.deleting = false;
+      }
+    },
+
+    closeModal() {
+      this.showModal = false;
+      this.resetForm();
+    },
+
+    resetForm() {
+      this.form = {
         judul: '',
         deskripsi: '',
-        gambar: ''
+        gambar: null
       };
+      this.imagePreview = null;
+      this.selectedInfo = null;
     },
-    saveInformasi() {
-      if (this.selectedInfo) {
-        // Update data
-        const index = this.informasiData.findIndex(info => info.id === this.selectedInfo.id);
-        if (index !== -1) {
-          this.informasiData[index] = {
-            ...this.informasiData[index],
-            ...this.editForm
-          };
-        }
-        alert('Informasi berhasil diperbarui!');
-        this.closeEditModal();
-      }
-    },
-    tambahInformasi() {
-      // Redirect ke form tambah informasi atau buka modal
-      // this.$router.push('/informasi/tambah');
-      alert('Fitur tambah informasi akan segera hadir!');
+
+    showNotification(message, type = 'success') {
+      // Simple alert, you can replace with toast notification
+      alert(message);
     }
   }
 }
@@ -249,6 +371,33 @@ export default {
 
 .btn-add:hover {
   background-color: #145f5f;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1a7a7a;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Cards Grid Layout */
@@ -310,6 +459,31 @@ export default {
   position: relative;
 }
 
+.modal-confirm {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-icon-danger {
+  width: 80px;
+  height: 80px;
+  background-color: #fee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.modal-icon-danger i {
+  font-size: 2.5rem;
+  color: #ef4444;
+}
+
 .modal-close {
   position: absolute;
   top: 1rem;
@@ -340,6 +514,12 @@ export default {
   margin-bottom: 1.5rem;
 }
 
+.modal-message {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
 .form-content {
   display: flex;
   flex-direction: column;
@@ -358,7 +538,11 @@ export default {
   font-size: 0.95rem;
 }
 
-.form-group .form-control {
+.required {
+  color: #ef4444;
+}
+
+.form-control {
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -366,14 +550,33 @@ export default {
   transition: border-color 0.3s ease;
 }
 
-.form-group .form-control:focus {
+.form-control:focus {
   outline: none;
   border-color: #1a7a7a;
 }
 
-.form-group textarea.form-control {
+textarea.form-control {
   resize: vertical;
   min-height: 100px;
+}
+
+.form-text {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.image-preview {
+  margin-top: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .form-actions {
@@ -383,7 +586,8 @@ export default {
 }
 
 .btn-cancel,
-.btn-save {
+.btn-save,
+.btn-delete-confirm {
   flex: 1;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -410,8 +614,23 @@ export default {
   color: white;
 }
 
-.btn-save:hover {
+.btn-save:hover:not(:disabled) {
   background-color: #145f5f;
+}
+
+.btn-delete-confirm {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-delete-confirm:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.btn-save:disabled,
+.btn-delete-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Responsive */

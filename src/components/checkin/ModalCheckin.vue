@@ -68,7 +68,7 @@ export default {
   data() {
     return {
       form: {
-        reservation_id: null,
+        id_reservation: null,
         checkin_date: '',
         item_list: ''
       },
@@ -79,7 +79,7 @@ export default {
   watch: {
     isOpen(newVal) {
       if (newVal && this.reservation) {
-        this.form.reservation_id = this.reservation.id
+        this.form.id_reservation = this.reservation.id
       }
     }
   },
@@ -102,9 +102,9 @@ export default {
     closeModal() {
       this.errors = {}
       this.form = {
-        reservation_id: null,
+        id_reservation: null,
         checkin_date: '',
-        items_checkin: ''
+        item_list: ''
       }
       this.$emit('close')
     }

@@ -84,6 +84,7 @@ export function useReservationPage() {
   const selectedHistory = ref(null);
   const deleteReservationId = ref(null);
   const formErrors = ref({});
+  const notification = ref(null);
 
   // Computed
   const sectionTitle = computed(() => {
@@ -97,10 +98,10 @@ export function useReservationPage() {
   });
 
   const loading = computed(() => {
-    return reservationState.loading.value || 
-           checkinState.loading.value || 
-           checkoutState.loading.value || 
-           historyState.loading.value;
+    return reservationState.loading.value ||
+      checkinState.loading.value ||
+      checkoutState.loading.value ||
+      historyState.loading.value;
   });
 
   // Methods - Data Loading
@@ -164,12 +165,15 @@ export function useReservationPage() {
   };
 
   // Methods - Reservation CRUD
-  const submitReservationForm = async (formData) => {
+  const submitReservationForm = async (payload) => {
     formErrors.value = {};
-    
+
+    // Extract data from the emitted payload
+    const formData = payload.data || payload;
+
     let result;
-    if (isEditMode.value && selectedReservation.value) {
-      result = await reservationState.updateReservation(selectedReservation.value.id, formData);
+    if (payload.isEdit && payload.reservationId) {
+      result = await reservationState.updateReservation(payload.reservationId, formData);
     } else {
       result = await reservationState.createReservation(formData);
     }
@@ -187,7 +191,7 @@ export function useReservationPage() {
 
   const confirmDeleteReservation = async () => {
     const result = await reservationState.deleteReservation(deleteReservationId.value);
-    
+
     if (result.success) {
       closeDeleteModal();
       return { success: true };
@@ -209,7 +213,7 @@ export function useReservationPage() {
 
   const submitCheckinForm = async (formData) => {
     const result = await checkinState.createCheckin(formData.data);
-    
+
     if (result.success) {
       closeCheckinModal();
       activeTab.value = 'checkin';
@@ -238,7 +242,7 @@ export function useReservationPage() {
 
   const submitCheckoutForm = async (formData) => {
     const result = await checkoutState.createCheckout(formData.data);
-    
+
     if (result.success) {
       closeCheckoutModal();
       activeTab.value = 'checkout';
@@ -253,13 +257,22 @@ export function useReservationPage() {
     showDetailModal.value = true;
   };
 
-  const finishCheckout = async () => {
-    closeDetailModal();
-    activeTab.value = 'history';
-    await Promise.all([
-      checkoutState.fetchCheckOuts(),
-      historyState.fetchHistories()
-    ]);
+  const finishCheckout = async (checkout) => {
+    // Create history record from this checkout
+    const result = await historyState.createHistoryFromCheckout(checkout.id);
+
+    if (result.success) {
+      closeDetailModal();
+      activeTab.value = 'history';
+      // Refresh both checkout and history lists
+      await Promise.all([
+        checkoutState.fetchCheckOuts(),
+        historyState.fetchHistories()
+      ]);
+      return { success: true };
+    }
+
+    return { success: false, message: result.message };
   };
 
   // Methods - History Handlers
@@ -313,7 +326,9 @@ export function useReservationPage() {
     selectedCheckinReservation,
     selectedCheckinForCheckout,
     selectedHistory,
+    deleteReservationId,
     formErrors,
+    notification,
 
     // Methods
     changePage,

@@ -18,6 +18,7 @@ import BeritaEventView from '../views/berita-event/BeritaEventView.vue'
 import TambahBeritaEventView from '../views/berita-event/TambahBeritaEventView.vue'
 import DetailBeritaEventView from '../views/berita-event/DetailBeritaEventView.vue'
 import EditBeritaEventView from '../views/berita-event/EditBeritaEventView.vue'
+import LaporanList from '../views/LaporanList.vue'
 
 const routes = [
   {
@@ -118,8 +119,12 @@ const routes = [
     path: '/user',
     name: 'user',
     component: User
+  },
+    {
+    path: '/laporan-list',
+    name: 'LaporanList',
+    component: LaporanList
   }
-
 ]
 
 const router = createRouter({

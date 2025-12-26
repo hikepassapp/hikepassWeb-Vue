@@ -1,7 +1,7 @@
 <template>
   <div class="informasi-card">
     <div class="card-image">
-      <img :src="info.gambar" :alt="info.judul" @error="handleImageError" />
+      <img :src="getImageUrl(info.gambar)" :alt="info.judul" @error="handleImageError" />
     </div>
     <div class="card-body">
       <h3 class="card-title">{{ info.judul }}</h3>
@@ -25,7 +25,7 @@
 
 <script>
 export default {
-  name: 'InfoCard',
+  name: 'InformasiCard',
   props: {
     info: {
       type: Object,
@@ -33,10 +33,23 @@ export default {
     }
   },
   methods: {
+    getImageUrl(gambar) {
+      // Jika gambar adalah URL lengkap
+      if (gambar && (gambar.startsWith('http://') || gambar.startsWith('https://'))) {
+        return gambar;
+      }
+      // Jika gambar adalah path relatif dari server
+      if (gambar) {
+        return `http://localhost:8000/storage/${gambar}`;
+      }
+      // Default placeholder
+      return 'https://via.placeholder.com/400x250?text=No+Image';
+    },
     handleImageError(e) {
       e.target.src = 'https://via.placeholder.com/400x250?text=No+Image';
     },
     truncateText(text, maxLength) {
+      if (!text) return '';
       if (text.length <= maxLength) return text;
       return text.substring(0, maxLength) + '...';
     }
@@ -66,6 +79,7 @@ export default {
   width: 100%;
   height: 250px;
   overflow: hidden;
+  background-color: #f0f0f0;
 }
 
 .card-image img {
@@ -159,7 +173,6 @@ export default {
   font-size: 1rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .card-image {
     height: 200px;
