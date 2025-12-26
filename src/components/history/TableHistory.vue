@@ -16,20 +16,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(checkout, index) in checkOuts" :key="checkout.id">
+          <tr v-for="(history, index) in histories" :key="history.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ checkout.checkin?.reservation?.id || '-' }}</td>
-            <td>{{ checkout.checkin?.reservation?.name || '-' }}</td>
-            <td>{{ checkout.checkin?.reservation?.nik || '-' }}</td>
-            <td>{{ checkout.checkin?.reservation?.phone_number || '-' }}</td>
-            <td>{{ checkout.checkin?.reservation?.mountain?.name || '-' }}</td>
-            <td>{{ formatDate(checkout.checkin?.checkin_date) }}</td>
-            <td>{{ formatDate(checkout.checkout_date) }}</td>
+            <td>{{ history.checkout?.checkin?.reservation?.id || '-' }}</td>
+            <td>{{ history.checkout?.checkin?.reservation?.name || '-' }}</td>
+            <td>{{ history.checkout?.checkin?.reservation?.nik || '-' }}</td>
+            <td>{{ history.checkout?.checkin?.reservation?.phone_number || '-' }}</td>
+            <td>{{ history.checkout?.checkin?.reservation?.mountain?.name || '-' }}</td>
+            <td>{{ formatDate(history.checkout?.checkin?.checkin_date) }}</td>
+            <td>{{ formatDate(history.checkout?.checkout_date) }}</td>
             <td>
               <div class="action-buttons">
                 <button 
                   class="btn-action btn-detail"
-                  @click="$emit('view-detail', checkout)"
+                  @click="$emit('view-detail', history)"
                   title="Lihat Detail"
                 >
                   <i class="bi bi-arrow-right"></i>
@@ -39,10 +39,10 @@
           </tr>
           
           <!-- Empty State -->
-          <tr v-if="checkOuts.length === 0">
+          <tr v-if="histories.length === 0">
             <td colspan="9" class="text-center empty-state">
               <i class="bi bi-inbox"></i>
-              <p>Belum ada data check-out</p>
+              <p>Belum ada data riwayat</p>
             </td>
           </tr>
         </tbody>
@@ -53,23 +53,24 @@
 
 <script>
 export default {
-  name: 'TableCheckOut',
+  name: 'TableHistory',
   props: {
-    checkOuts: {
+    histories: {
       type: Array,
-      required: true
+      default: () => []
     }
   },
+  emits: ['view-detail'],
   methods: {
     formatDate(dateString) {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
     }
-  },
-  emits: ['view-detail']
+  }
 }
 </script>
 
@@ -97,9 +98,9 @@ export default {
 
 .custom-table thead th {
   padding: 1rem;
+  text-align: left;
   font-weight: 700;
   color: #333;
-  text-align: left;
   border-bottom: 2px solid #d0d0d0;
   white-space: nowrap;
 }
