@@ -68,7 +68,7 @@ export default {
   data() {
     return {
       form: {
-        checkin_id: null,
+        id_checkin: null,
         checkout_date: '',
         item_list: ''
       },
@@ -79,7 +79,7 @@ export default {
   watch: {
     isOpen(newVal) {
       if (newVal && this.checkin) {
-        this.form.checkin_id = this.checkin.id
+        this.form.id_checkin = this.checkin.id
       }
     }
   },
@@ -102,9 +102,9 @@ export default {
     closeModal() {
       this.errors = {}
       this.form = {
-        checkin_id: null,
+        id_checkin: null,
         checkout_date: '',
-        items_checkout: ''
+        item_list: ''
       }
       this.$emit('close')
     }

@@ -145,7 +145,7 @@
             class="form-control"
             :class="{ 'is-invalid': errors.id_card }"
             accept="image/*"
-            required
+            :required="!isEdit"
           />
           <span v-if="errors.id_card" class="error-text">{{ errors.id_card[0] }}</span>
         </div>
@@ -192,6 +192,13 @@ export default {
   computed: {
     isEdit() {
       return !!this.reservation
+    },
+    selectedMountain() {
+      if (!this.form.id_mountain) return null
+      return this.mountains.find(m => m.id === this.form.id_mountain)
+    },
+    mountainPrice() {
+      return this.selectedMountain?.price || 0
     }
   },
   watch: {
@@ -235,12 +242,40 @@ export default {
       this.isSubmitting = true
 
       try {
+        // Validate required fields first
+        if (!this.form.id_mountain) {
+          this.errors = { id_mountain: ['Pilih gunung terlebih dahulu'] }
+          this.isSubmitting = false
+          return
+        }
+
+        if (!this.form.id_card && !this.isEdit) {
+          this.errors = { id_card: ['Upload foto KTP terlebih dahulu'] }
+          this.isSubmitting = false
+          return
+        }
+
+        // Create FormData for file upload
         const formData = new FormData()
+        
+        // Add all form fields (only non-empty values)
         Object.keys(this.form).forEach(key => {
-          if (this.form[key] !== null && this.form[key] !== undefined) {
-            formData.append(key, this.form[key])
+          const value = this.form[key]
+          if (value !== null && value !== undefined && value !== '') {
+            formData.append(key, value)
           }
         })
+        
+        // Add price from selected mountain (convert to integer)
+        if (this.mountainPrice) {
+          formData.append('price', Math.round(parseFloat(this.mountainPrice)))
+        }
+
+        // Debug: log what we're sending
+        console.log('📤 Submitting reservation:')
+        for (let pair of formData.entries()) {
+          console.log(`  ${pair[0]}: ${pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]}`)
+        }
 
         this.$emit('submit', {
           data: formData,
