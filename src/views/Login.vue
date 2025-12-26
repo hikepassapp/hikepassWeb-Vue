@@ -28,15 +28,20 @@
               </div>
             </div>
 
+            <!-- Error Message -->
+            <div v-if="errorMessage" class="alert alert-danger">
+              {{ errorMessage }}
+            </div>
+
             <!-- Forgot Password -->
             <div class="text-center mb-4">
-              <a href="#" class="forgot-password">Lupa kata sandi Anda?</a>
+              <a href="#" @click.prevent="goToForgotPassword" class="forgot-password">Lupa kata sandi Anda?</a>
             </div>
 
             <!-- Sign In Button -->
             <div class="text-center">
-              <button type="submit" class="btn btn-signin">
-                SIGN IN
+              <button type="submit" class="btn btn-signin" :disabled="loading">
+                {{ loading ? 'LOADING...' : 'SIGN IN' }}
               </button>
             </div>
           </form>
@@ -47,15 +52,12 @@
       <div class="col-lg-6 col-md-6 col-12 right-section">
         <div class="welcome-wrapper">
           <h1 class="welcome-title">
-            Selamat Datang<br />di Hikepass!
+            Selamat Datang<br />di Admin Hikepass!
           </h1>
           <p class="welcome-subtitle">
-            Register sekarang! untuk menikmati Semua<br />
-            fitur yang tersedia di Hikepass.
+            Untuk Menjadi Admin Hikepass,<br />
+            Anda Harus Menghubungi admin@hikepass.com.
           </p>
-          <button class="btn btn-signup" @click="goToSignUp">
-            SIGN UP
-          </button>
         </div>
       </div>
     </div>
@@ -63,7 +65,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '../api/index.js'
 
 export default {
   name: 'LoginView',
@@ -72,45 +74,53 @@ export default {
       email: '',
       password: '',
       showPassword: false,
-      errorMessage: '' // Tambahan untuk pesan error
-    }
+      loading: false,
+      errorMessage: '',
+    };
   },
   methods: {
-    // Gunakan async/await agar kode lebih rapi
     async handleLogin() {
+      this.loading = true;
+      this.errorMessage = '';
+
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/login', {
+        const { data } = await apiClient.post('/login', {
           email: this.email,
-          password: this.password
+          password: this.password,
         });
 
-        // Simpan Token & User
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Simpan token & user
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
 
-        // LOGIC REDIRECT
-        if (response.data.user.role === 'admin') {
-          // Arahkan ke halaman UserView yang baru kamu buat
-          // Pastikan di router/index.js path-nya sesuai
-          this.$router.push('/home');
-        } else {
-          // Customer biasa ke Home
-          this.$router.push('/home');
-        }
+        // Redirect berdasarkan role (siap dikembangkan)
+        this.$router.push('/home');
 
       } catch (error) {
-        alert('Login Gagal: Cek email/password');
+        console.error("Login Error:", error);
+        this.errorMessage =
+          error.response?.data?.message ||
+          'Login gagal. Periksa email dan password.';
+      } finally {
+        this.loading = false;
       }
     },
+
     togglePassword() {
       this.showPassword = !this.showPassword;
     },
+
     goToSignUp() {
       this.$router.push('/register');
-    }
-  }
-}
+    },
+
+    goToForgotPassword() {
+      this.$router.push('/forgot-password');
+    },
+  },
+};
 </script>
+
 
 <style scoped>
 * {
@@ -214,8 +224,13 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.btn-signin:hover {
+.btn-signin:hover:not(:disabled) {
   background-color: #145f5f;
+}
+
+.btn-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Right Section - Welcome */
@@ -247,22 +262,14 @@ export default {
   opacity: 0.95;
 }
 
-.btn-signup {
-  background-color: white;
-  color: #1a5555;
-  border: none;
-  border-radius: 30px;
-  padding: 0.9rem 4rem;
-  font-weight: 600;
-  font-size: 1rem;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-}
 
-.btn-signup:hover {
-  background-color: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+/* Alert Styles */
+.alert {
+  border-radius: 30px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border: none;
 }
 
 /* Responsive Design */
@@ -297,8 +304,7 @@ export default {
     font-size: 2rem;
   }
 
-  .btn-signin,
-  .btn-signup {
+  .btn-signin {
     padding: 0.8rem 3rem;
   }
 }

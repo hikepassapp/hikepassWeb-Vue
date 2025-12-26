@@ -9,7 +9,6 @@ export default {
 </script>
 
 <style>
-/* Global styles jika diperlukan */
 body {
   margin: 0;
   padding: 0;
