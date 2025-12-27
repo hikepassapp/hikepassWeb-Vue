@@ -195,7 +195,7 @@ export default {
         
         if (response.data.success) {
           alert(response.data.message)
-          this.$router.push('/laporan-list')
+          this.$router.push('/laporan')
         }
       } catch (error) {
         console.error('Error submitting laporan:', error)
