@@ -26,11 +26,18 @@
                   @click="$emit('view-detail', admin)"
                   title="Lihat Detail"
                 >
-                  <i class="bi bi-arrow-right"></i>
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button 
+                  class="btn-action btn-edit"
+                  @click="$emit('edit-admin', admin)"
+                  title="Edit"
+                >
+                  <i class="bi bi-pencil-square"></i>
                 </button>
                 <button 
                   class="btn-action btn-delete"
-                  @click="$emit('delete-admin', admin.id)"
+                  @click="$emit('delete-admin', admin)"
                   title="Hapus"
                 >
                   <i class="bi bi-trash"></i>
@@ -61,7 +68,7 @@ export default {
       required: true
     }
   },
-  emits: ['view-detail', 'delete-admin']
+  emits: ['view-detail', 'edit-admin', 'delete-admin']
 }
 </script>
 
@@ -136,6 +143,16 @@ export default {
 
 .btn-detail:hover {
   background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.btn-edit {
+  background-color: #f39c12;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #e67e22;
   transform: translateY(-2px);
 }
 

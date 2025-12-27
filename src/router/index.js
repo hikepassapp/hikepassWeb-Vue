@@ -5,7 +5,6 @@ import Register from '../views/Register.vue'
 import RegisterData from '../views/RegisterData.vue'
 import DataGunung from '../views/dataGunung/DataGunung.vue'
 import Laporan from '../views/Laporan.vue'
-import DaftarLaporan from '../views/DaftarLaporan.vue'
 import User from '../views/User.vue'
 import Reservasi from '../views/reservation/Reservasi.vue'
 import Berita from '../views/berita-event/BeritaEventView.vue'
@@ -113,7 +112,7 @@ const routes = [
   {
     path: '/laporan',
     name: 'Laporan',
-    component: DaftarLaporan
+    component: LaporanList
   },
   {
     path: '/laporan/buat',
@@ -124,11 +123,6 @@ const routes = [
     path: '/user',
     name: 'user',
     component: User
-  },
-  {
-    path: '/laporan-list',
-    name: 'LaporanList',
-    component: LaporanList
   },
   {
     path: '/forgot-password',

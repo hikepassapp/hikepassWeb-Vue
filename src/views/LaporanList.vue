@@ -66,7 +66,7 @@ export default {
     },
 
     goToCreate() {
-      this.$router.push('/laporan/create')
+      this.$router.push('/laporan/buat')
     },
 
     async handleDelete(id) {

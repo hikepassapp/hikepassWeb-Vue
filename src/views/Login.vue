@@ -56,9 +56,22 @@
           </h1>
           <p class="welcome-subtitle">
             Untuk Menjadi Admin Hikepass,<br />
-            Anda Harus Menghubungi admin@hikepass.com.
+            Anda Harus Menghubungi kelompok6telu@gmail.com.
           </p>
         </div>
+      </div>
+    </div>
+    <div v-if="showForbiddenModal" class="modal-overlay">
+      <div class="custom-modal">
+        <div class="modal-icon text-danger">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h3 class="modal-title">Akses Ditolak</h3>
+        <p class="modal-message">
+          Maaf, akun Anda terdaftar sebagai <strong>{{ userRole }}</strong>.<br>
+          Halaman ini khusus untuk <strong>Admin Hikepass</strong>.
+        </p>
+        <button class="btn btn-signin w-100" @click="closeModal">OK, Saya Mengerti</button>
       </div>
     </div>
   </div>
@@ -76,12 +89,15 @@ export default {
       showPassword: false,
       loading: false,
       errorMessage: '',
+      showForbiddenModal: false,
+      userRole: ''
     };
   },
   methods: {
     async handleLogin() {
       this.loading = true;
       this.errorMessage = '';
+      this.showForbiddenModal = false;
 
       try {
         const { data } = await apiClient.post('/login', {
@@ -89,18 +105,28 @@ export default {
           password: this.password,
         });
 
-        // Simpan token & user
-        localStorage.setItem('token', data.access_token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // Redirect berdasarkan role (siap dikembangkan)
-        this.$router.push('/home');
+        if (data.user.role === 'admin') {
+          localStorage.setItem('token', data.access_token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          this.$router.push('/home');
+        } else {
+          //Jika BUKAN Admin, tampilkan modal & jangan simpan token
+          this.userRole = data.user.role;
+          this.showForbiddenModal = true;
+          
+          // Hapus token jika backend otomatis mengirimkannya meski bukan admin
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
 
       } catch (error) {
         console.error("Login Error:", error);
-        this.errorMessage =
-          error.response?.data?.message ||
-          'Login gagal. Periksa email dan password.';
+        if (error.response && error.response.data && error.response.data.message) {
+            this.errorMessage = error.response.data.message;
+        } else {
+            this.errorMessage = 'Login gagal. Periksa email dan password.';
+        }
       } finally {
         this.loading = false;
       }
@@ -108,6 +134,10 @@ export default {
 
     togglePassword() {
       this.showPassword = !this.showPassword;
+    },
+
+    closeModal() {
+      this.showForbiddenModal = false;
     },
 
     goToSignUp() {
@@ -270,6 +300,48 @@ export default {
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
   border: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Gelap transparan */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px); /* Efek blur di belakang modal */
+}
+
+.custom-modal {
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  color: #1a4d4d;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.modal-message {
+  color: #666;
+  margin-bottom: 2rem;
+  line-height: 1.5;
 }
 
 /* Responsive Design */
