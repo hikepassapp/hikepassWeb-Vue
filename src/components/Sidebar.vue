@@ -117,23 +117,36 @@ export default {
   name: 'Sidebar',
   data() {
     return {
-      showLogoutModal: false
+      showLogoutModal: false,
+      user: null
+    }
+  },
+  mounted() {
+    // Ambil data user dari localStorage
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      this.user = JSON.parse(userData)
     }
   },
   methods: {
+    openLogoutModal() {
+      this.showLogoutModal = true
+    },
+
+    closeLogoutModal() {
+      this.showLogoutModal = false
+    },
+
     confirmLogout() {
-      // Hapus token atau data session
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userData');
+      // Hapus semua data session
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       
       // Tutup modal
-      this.showLogoutModal = false;
+      this.showLogoutModal = false
       
-      // Redirect ke halaman login
-      this.$router.push('/login');
-      
-      // Atau gunakan window.location untuk hard refresh
-      // window.location.href = '/login';
+      // Redirect ke login
+      this.$router.push('/login')
     }
   }
 }

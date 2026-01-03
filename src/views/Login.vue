@@ -122,10 +122,14 @@ export default {
 
       } catch (error) {
         console.error("Login Error:", error);
-        if (error.response && error.response.data && error.response.data.message) {
-            this.errorMessage = error.response.data.message;
+        if (error.response?.data?.message) {
+          this.errorMessage = error.response.data.message
+        } else if (error.response?.status === 401) {
+          this.errorMessage = 'Email atau password salah'
+        } else if (error.response?.status === 422) {
+          this.errorMessage = 'Data yang Anda masukkan tidak valid'
         } else {
-            this.errorMessage = 'Login gagal. Periksa email dan password.';
+          this.errorMessage = 'Terjadi kesalahan. Silakan coba lagi.'
         }
       } finally {
         this.loading = false;
