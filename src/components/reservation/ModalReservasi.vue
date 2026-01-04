@@ -15,7 +15,7 @@
             id="mountain" 
             v-model="form.id_mountain"
             class="form-control"
-            :class="{ 'is-invalid': errors.id_mountain }"
+            :class="{ 'is-invalid': validationErrors.id_mountain }"
             required
           >
             <option value="">Pilih Gunung</option>
@@ -23,7 +23,7 @@
               {{ mountain.name }}
             </option>
           </select>
-          <span v-if="errors.id_mountain" class="error-text">{{ errors.id_mountain[0] }}</span>
+          <span v-if="validationErrors.id_mountain" class="error-text">{{ validationErrors.id_mountain }}</span>
         </div>
 
         <!-- Start Date -->
@@ -33,11 +33,12 @@
             id="startDate" 
             type="date" 
             v-model="form.start_date"
+            :min="minStartDate"
             class="form-control"
-            :class="{ 'is-invalid': errors.start_date }"
+            :class="{ 'is-invalid': validationErrors.start_date }"
             required
           />
-          <span v-if="errors.start_date" class="error-text">{{ errors.start_date[0] }}</span>
+          <span v-if="validationErrors.start_date" class="error-text">{{ validationErrors.start_date }}</span>
         </div>
 
         <!-- Full Name -->
@@ -47,12 +48,13 @@
             id="name" 
             type="text" 
             v-model="form.name"
+            @input="validateName"
             class="form-control"
-            :class="{ 'is-invalid': errors.name }"
+            :class="{ 'is-invalid': validationErrors.name }"
             placeholder="Masukkan nama lengkap"
             required
           />
-          <span v-if="errors.name" class="error-text">{{ errors.name[0] }}</span>
+          <span v-if="validationErrors.name" class="error-text">{{ validationErrors.name }}</span>
         </div>
 
         <!-- NIK -->
@@ -62,13 +64,16 @@
             id="nik" 
             type="text" 
             v-model="form.nik"
+            @input="validateNik"
             class="form-control"
-            :class="{ 'is-invalid': errors.nik }"
+            :class="{ 'is-invalid': validationErrors.nik }"
             placeholder="Masukkan NIK"
             maxlength="16"
+            inputmode="numeric"
             required
           />
-          <span v-if="errors.nik" class="error-text">{{ errors.nik[0] }}</span>
+          <span v-if="validationErrors.nik" class="error-text">{{ validationErrors.nik }}</span>
+          <span v-else-if="form.nik && form.nik.length < 16" class="input-info">{{ form.nik.length }}/16 digit</span>
         </div>
 
         <!-- Gender -->
@@ -78,14 +83,14 @@
             id="gender" 
             v-model="form.gender"
             class="form-control"
-            :class="{ 'is-invalid': errors.gender }"
+            :class="{ 'is-invalid': validationErrors.gender }"
             required
           >
             <option value="">Pilih Jenis Kelamin</option>
             <option value="male">Laki-laki</option>
             <option value="female">Perempuan</option>
           </select>
-          <span v-if="errors.gender" class="error-text">{{ errors.gender[0] }}</span>
+          <span v-if="validationErrors.gender" class="error-text">{{ validationErrors.gender }}</span>
         </div>
 
         <!-- Phone Number -->
@@ -95,12 +100,13 @@
             id="phoneNumber" 
             type="tel" 
             v-model="form.phone_number"
+            @input="validatePhoneNumber"
             class="form-control"
-            :class="{ 'is-invalid': errors.phone_number }"
+            :class="{ 'is-invalid': validationErrors.phone_number }"
             placeholder="Contoh: 081234567890"
             required
           />
-          <span v-if="errors.phone_number" class="error-text">{{ errors.phone_number[0] }}</span>
+          <span v-if="validationErrors.phone_number" class="error-text">{{ validationErrors.phone_number }}</span>
         </div>
 
         <!-- Address -->
@@ -110,12 +116,12 @@
             id="address" 
             v-model="form.address"
             class="form-control"
-            :class="{ 'is-invalid': errors.address }"
+            :class="{ 'is-invalid': validationErrors.address }"
             placeholder="Masukkan alamat lengkap"
             rows="3"
             required
           ></textarea>
-          <span v-if="errors.address" class="error-text">{{ errors.address[0] }}</span>
+          <span v-if="validationErrors.address" class="error-text">{{ validationErrors.address }}</span>
         </div>
 
         <!-- Citizenship -->
@@ -125,29 +131,38 @@
             id="citizen" 
             v-model="form.citizen"
             class="form-control"
-            :class="{ 'is-invalid': errors.citizen }"
+            :class="{ 'is-invalid': validationErrors.citizen }"
             required
           >
             <option value="">Pilih Kewarganegaraan</option>
             <option value="WNI">WNI</option>
             <option value="WNA">WNA</option>
           </select>
-          <span v-if="errors.citizen" class="error-text">{{ errors.citizen[0] }}</span>
+          <span v-if="validationErrors.citizen" class="error-text">{{ validationErrors.citizen }}</span>
         </div>
 
         <!-- ID Card -->
         <div class="form-group">
           <label for="idCard">Foto KTP <span class="required">*</span></label>
+          <div v-if="isEdit && form.id_card && typeof form.id_card === 'string'" class="current-file">
+            File saat ini: {{ getFileName(form.id_card) }}
+          </div>
           <input 
             id="idCard" 
             type="file" 
             @change="handleFileUpload"
             class="form-control"
-            :class="{ 'is-invalid': errors.id_card }"
+            :class="{ 'is-invalid': validationErrors.id_card }"
             accept="image/*"
-            :required="!isEdit"
+            :required="!isEdit && !form.id_card"
           />
-          <span v-if="errors.id_card" class="error-text">{{ errors.id_card[0] }}</span>
+          <span v-if="validationErrors.id_card" class="error-text">{{ validationErrors.id_card }}</span>
+          
+          <!-- ID Card Preview -->
+          <div v-if="idCardPreview" class="id-card-preview-section">
+            <label>Preview Foto KTP:</label>
+            <img :src="idCardPreview" :alt="'Preview ID Card'" class="id-card-preview-image" />
+          </div>
         </div>
 
         <!-- Form Actions -->
@@ -185,8 +200,12 @@ export default {
   data() {
     return {
       form: this.getEmptyForm(),
+      validationErrors: {},
       errors: {},
-      isSubmitting: false
+      isSubmitting: false,
+      originalStartDate: null,
+      originalIdCard: null,
+      idCardPreview: null
     }
   },
   computed: {
@@ -199,14 +218,22 @@ export default {
     },
     mountainPrice() {
       return this.selectedMountain?.price || 0
+    },
+    minStartDate() {
+      const today = new Date()
+      return today.toISOString().split('T')[0]
     }
   },
   watch: {
     isOpen(newVal) {
       if (newVal && this.reservation) {
+        // Store original values for edit mode
+        this.originalStartDate = this.reservation.start_date
+        this.originalIdCard = this.reservation.id_card
+        
         this.form = {
           id_mountain: this.reservation.id_mountain,
-          start_date: this.reservation.start_date,
+          start_date: this.formatDateForInput(this.reservation.start_date),
           name: this.reservation.name,
           nik: this.reservation.nik,
           gender: this.reservation.gender,
@@ -215,8 +242,20 @@ export default {
           citizen: this.reservation.citizen,
           id_card: this.reservation.id_card
         }
+        this.validationErrors = {}
+        
+        // Set preview image untuk edit mode
+        if (this.reservation.id_card && typeof this.reservation.id_card === 'string') {
+          this.idCardPreview = this.buildImageUrl(this.reservation.id_card)
+        } else {
+          this.idCardPreview = null
+        }
       } else if (newVal) {
         this.form = this.getEmptyForm()
+        this.originalStartDate = null
+        this.originalIdCard = null
+        this.validationErrors = {}
+        this.idCardPreview = null
       }
     }
   },
@@ -234,33 +273,156 @@ export default {
         id_card: null
       }
     },
+    validateName() {
+      const value = this.form.name
+      const alphabetRegex = /^[a-zA-Z\s]*$/
+      
+      if (!value) {
+        this.validationErrors.name = 'Nama lengkap wajib diisi'
+      } else if (!alphabetRegex.test(value)) {
+        this.validationErrors.name = 'Nama hanya boleh berisi huruf'
+      } else {
+        delete this.validationErrors.name
+      }
+    },
+    validateNik() {
+      const value = this.form.nik
+      const digitRegex = /^\d*$/
+      
+      if (!value) {
+        this.validationErrors.nik = 'NIK wajib diisi'
+      } else if (!digitRegex.test(value)) {
+        this.validationErrors.nik = 'NIK hanya boleh berisi angka'
+      } else if (value.length < 16) {
+        this.validationErrors.nik = `NIK harus 16 digit (saat ini ${value.length} digit)`
+      } else {
+        delete this.validationErrors.nik
+      }
+    },
+    validatePhoneNumber() {
+      const value = this.form.phone_number
+      const digitRegex = /^\d*$/
+      
+      if (!value) {
+        this.validationErrors.phone_number = 'No. telepon wajib diisi'
+      } else if (!digitRegex.test(value)) {
+        this.validationErrors.phone_number = 'No. telepon hanya boleh berisi angka'
+      } else if (value.length < 10) {
+        this.validationErrors.phone_number = `No. telepon minimal 10 digit (saat ini ${value.length} digit)`
+      } else if (value.length > 13) {
+        this.validationErrors.phone_number = `No. telepon maksimal 13 digit (saat ini ${value.length} digit)`
+      } else {
+        delete this.validationErrors.phone_number
+      }
+    },
+    validateAllFields() {
+      this.validationErrors = {}
+      
+      // Validate all fields
+      if (!this.form.id_mountain) {
+        this.validationErrors.id_mountain = 'Pilih gunung terlebih dahulu'
+      }
+      
+      if (!this.form.start_date) {
+        this.validationErrors.start_date = 'Tanggal mulai wajib diisi'
+      }
+      
+      this.validateName()
+      this.validateNik()
+      
+      if (!this.form.gender) {
+        this.validationErrors.gender = 'Pilih jenis kelamin'
+      }
+      
+      this.validatePhoneNumber()
+      
+      if (!this.form.address) {
+        this.validationErrors.address = 'Alamat wajib diisi'
+      }
+      
+      if (!this.form.citizen) {
+        this.validationErrors.citizen = 'Pilih kewarganegaraan'
+      }
+      
+      if (!this.form.id_card && !this.isEdit) {
+        this.validationErrors.id_card = 'Upload foto KTP terlebih dahulu'
+      }
+      
+      return Object.keys(this.validationErrors).length === 0
+    },
+    getFileName(path) {
+      if (!path) return ''
+      return path.split('/').pop() || path
+    },
+    buildImageUrl(path) {
+      if (!path) return ''
+      return path.startsWith('http') ? path : `http://127.0.0.1:8000/storage/${path}`
+    },
+    formatDateForInput(dateValue) {
+      if (!dateValue) return ''
+
+      // Normalize string dates from backend (dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, with/without time)
+      if (typeof dateValue === 'string') {
+        const parts = dateValue.split(/[^0-9]/).filter(Boolean)
+        if (parts.length === 3) {
+          let year, month, day
+          if (parts[0].length === 4) {
+            // Assume yyyy mm dd
+            ;[year, month, day] = parts
+          } else {
+            // Assume dd mm yyyy
+            ;[day, month, year] = parts
+          }
+          if (year && month && day) {
+            return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+          }
+        }
+      }
+
+      const parsed = new Date(dateValue)
+      if (!isNaN(parsed)) {
+        return parsed.toISOString().split('T')[0]
+      }
+
+      return ''
+    },
     handleFileUpload(event) {
-      this.form.id_card = event.target.files[0]
+      const file = event.target.files[0]
+      if (file) {
+        this.form.id_card = file
+        delete this.validationErrors.id_card
+        
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.idCardPreview = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
     },
     async handleSubmit() {
       this.errors = {}
+      
+      // Validate all fields before submission
+      if (!this.validateAllFields()) {
+        return
+      }
+      
       this.isSubmitting = true
 
       try {
-        // Validate required fields first
-        if (!this.form.id_mountain) {
-          this.errors = { id_mountain: ['Pilih gunung terlebih dahulu'] }
-          this.isSubmitting = false
-          return
-        }
-
-        if (!this.form.id_card && !this.isEdit) {
-          this.errors = { id_card: ['Upload foto KTP terlebih dahulu'] }
-          this.isSubmitting = false
-          return
-        }
-
         // Create FormData for file upload
         const formData = new FormData()
         
         // Add all form fields (only non-empty values)
         Object.keys(this.form).forEach(key => {
           const value = this.form[key]
+          
+          // Skip id_card if it's the original value in edit mode
+          if (key === 'id_card' && this.isEdit && value === this.originalIdCard) {
+            return
+          }
+          
           if (value !== null && value !== undefined && value !== '') {
             formData.append(key, value)
           }
@@ -290,6 +452,7 @@ export default {
     },
     closeModal() {
       this.errors = {}
+      this.validationErrors = {}
       this.$emit('close')
     }
   }
@@ -387,6 +550,13 @@ export default {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.form-control:disabled {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
 .form-control:focus {
   outline: none;
   border-color: #1a7a7a;
@@ -410,6 +580,45 @@ textarea.form-control {
   color: #dc3545;
   font-size: 0.85rem;
   margin-top: 0.25rem;
+}
+
+.input-info {
+  color: #666;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.current-file {
+  font-size: 0.85rem;
+  color: #666;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.id-card-preview-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.id-card-preview-section label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.id-card-preview-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }
 
 .form-actions {

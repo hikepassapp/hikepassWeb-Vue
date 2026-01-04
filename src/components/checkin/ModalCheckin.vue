@@ -15,11 +15,14 @@
             id="checkinDate" 
             type="date" 
             v-model="form.checkin_date"
+            @change="validateCheckinDate"
+            :min="minCheckinDate"
             class="form-control"
-            :class="{ 'is-invalid': errors.checkin_date }"
+            :class="{ 'is-invalid': validationErrors.checkin_date }"
             required
           />
-          <span v-if="errors.checkin_date" class="error-text">{{ errors.checkin_date[0] }}</span>
+          <span v-if="validationErrors.checkin_date" class="error-text">{{ validationErrors.checkin_date }}</span>
+          <span v-else-if="formattedStartDate" class="helper-text">Check-in dapat dilakukan sejak {{ formattedStartDate }}.</span>
         </div>
 
         <!-- Barang Bawaan -->
@@ -29,12 +32,12 @@
             id="items" 
             v-model="form.item_list"
             class="form-control"
-            :class="{ 'is-invalid': errors.item_list }"
+            :class="{ 'is-invalid': validationErrors.item_list }"
             placeholder="Masukkan daftar barang bawaan"
             rows="4"
             required
           ></textarea>
-          <span v-if="errors.item_list" class="error-text">{{ errors.item_list[0] }}</span>
+          <span v-if="validationErrors.item_list" class="error-text">{{ validationErrors.item_list }}</span>
         </div>
 
         <!-- Form Actions -->
@@ -72,20 +75,112 @@ export default {
         checkin_date: '',
         item_list: ''
       },
+      validationErrors: {},
       errors: {},
       isSubmitting: false
+    }
+  },
+  computed: {
+    minCheckinDate() {
+      if (this.reservation?.start_date) {
+        return this.formatDateForInput(this.reservation.start_date)
+      }
+      return new Date().toISOString().split('T')[0]
+    },
+    formattedStartDate() {
+      const startDate = this.formatDateForInput(this.reservation?.start_date)
+      return startDate ? this.formatDate(startDate) : ''
     }
   },
   watch: {
     isOpen(newVal) {
       if (newVal && this.reservation) {
         this.form.id_reservation = this.reservation.id
+        this.validationErrors = {}
       }
     }
   },
   methods: {
+    validateCheckinDate() {
+      if (!this.form.checkin_date) {
+        this.validationErrors.checkin_date = 'Tanggal check-in wajib diisi'
+        return
+      }
+      
+      // checkin_date harus >= start_date (bisa sama tanggalnya)
+      const reservationStart = this.formatDateForInput(this.reservation?.start_date)
+      if (reservationStart && this.isBeforeDate(this.form.checkin_date, reservationStart)) {
+        this.validationErrors.checkin_date = `Check-in dapat dilakukan sejak ${this.formatDate(reservationStart)} atau setelahnya`
+        return
+      }
+      
+      delete this.validationErrors.checkin_date
+    },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      if (isNaN(date)) return '-'
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    },
+    formatDateForInput(dateValue) {
+      if (!dateValue) return ''
+
+      if (typeof dateValue === 'string') {
+        const parts = dateValue.split(/[^0-9]/).filter(Boolean)
+        if (parts.length === 3) {
+          let year, month, day
+          if (parts[0].length === 4) {
+            ;[year, month, day] = parts
+          } else {
+            ;[day, month, year] = parts
+          }
+          if (year && month && day) {
+            return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+          }
+        }
+      }
+
+      const parsed = new Date(dateValue)
+      if (!isNaN(parsed)) {
+        return parsed.toISOString().split('T')[0]
+      }
+      return ''
+    },
+    isBeforeDate(value, minValue) {
+      const valueDate = new Date(value)
+      const minDate = new Date(minValue)
+      if (isNaN(valueDate) || isNaN(minDate)) return false
+      return valueDate < minDate
+    },
+    validateAllFields() {
+      this.validationErrors = {}
+      
+      if (!this.form.checkin_date) {
+        this.validationErrors.checkin_date = 'Tanggal check-in wajib diisi'
+      } else {
+        const reservationStart = this.formatDateForInput(this.reservation?.start_date)
+        if (reservationStart && this.isBeforeDate(this.form.checkin_date, reservationStart)) {
+          this.validationErrors.checkin_date = `Check-in dapat dilakukan sejak ${this.formatDate(reservationStart)} atau setelahnya`
+        }
+      }
+      
+      if (!this.form.item_list || !this.form.item_list.trim()) {
+        this.validationErrors.item_list = 'Barang bawaan check-in wajib diisi'
+      }
+      
+      return Object.keys(this.validationErrors).length === 0
+    },
     async handleSubmit() {
       this.errors = {}
+      
+      // Validate all fields before submission
+      if (!this.validateAllFields()) {
+        return
+      }
+      
       this.isSubmitting = true
 
       try {
@@ -101,6 +196,7 @@ export default {
     },
     closeModal() {
       this.errors = {}
+      this.validationErrors = {}
       this.form = {
         id_reservation: null,
         checkin_date: '',
@@ -224,6 +320,12 @@ textarea.form-control {
 
 .error-text {
   color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.helper-text {
+  color: #6c757d;
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }
