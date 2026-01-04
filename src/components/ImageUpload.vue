@@ -4,35 +4,28 @@
       {{ label }}
       <span v-if="required" class="text-danger">*</span>
     </label>
-    
+
     <div class="upload-area">
-      <!-- Preview Images -->
-      <div v-if="previewImages.length > 0" class="preview-container">
-        <div 
-          v-for="(image, index) in previewImages" 
-          :key="index" 
-          class="preview-item"
-        >
-          <img :src="image" alt="Preview" class="preview-image" />
-          <button 
+      <div v-if="previewImage" class="preview-container">
+        <div class="preview-item">
+          <img :src="previewImage" alt="Preview" class="preview-image" />
+          <button
             type="button"
-            @click="removeImage(index)" 
             class="btn-remove"
+            @click="removeImage"
           >
             <i class="bi bi-x-circle-fill"></i>
           </button>
         </div>
       </div>
-      
-      <!-- Upload Button -->
-      <label class="upload-btn" :class="{ 'has-images': previewImages.length > 0 }">
+
+      <label v-if="!previewImage" class="upload-btn">
         <input
           type="file"
-          @change="handleFileChange"
-          accept="image/*"
-          multiple
           class="file-input"
-          :required="required && previewImages.length === 0"
+          accept="image/*"
+          @change="handleFileChange"
+          :required="required && !previewImage"
         />
         <div class="upload-content">
           <i class="bi bi-camera-fill upload-icon"></i>
@@ -40,7 +33,7 @@
         </div>
       </label>
     </div>
-    
+
     <small class="form-text">
       {{ helperText }}
     </small>
@@ -61,49 +54,47 @@ export default {
     },
     helperText: {
       type: String,
-      default: 'Format: JPG, PNG, JPEG. Max 5MB per file.'
+      default: 'Format: JPG, PNG, JPEG. Maksimal 5MB.'
     }
   },
   data() {
     return {
-      previewImages: [],
-      files: []
+      previewImage: null, 
+      file: null           
     }
   },
   methods: {
     handleFileChange(event) {
-      const files = Array.from(event.target.files);
-      
-      files.forEach(file => {
-        // Validate file size (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`File ${file.name} terlalu besar. Maksimal 5MB.`);
-          return;
-        }
-        
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          alert(`File ${file.name} bukan gambar.`);
-          return;
-        }
-        
-        this.files.push(file);
-        
-        // Create preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.previewImages.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      });
-      
-      this.$emit('update:files', this.files);
-      event.target.value = ''; // Reset input
+      const file = event.target.files[0]
+      if (!file) return
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file maksimal 5MB')
+        event.target.value = ''
+        return
+      }
+
+      if (!file.type.startsWith('image/')) {
+        alert('File harus berupa gambar')
+        event.target.value = ''
+        return
+      }
+
+      this.file = file
+
+      const reader = new FileReader()
+      reader.onload = e => {
+        this.previewImage = e.target.result
+      }
+      reader.readAsDataURL(file)
+
+      this.$emit('update:files', [file])
     },
-    removeImage(index) {
-      this.previewImages.splice(index, 1);
-      this.files.splice(index, 1);
-      this.$emit('update:files', this.files);
+
+    removeImage() {
+      this.previewImage = null
+      this.file = null
+      this.$emit('update:files', [])
     }
   },
   emits: ['update:files']
@@ -131,8 +122,6 @@ export default {
 
 .preview-container {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .preview-item {
@@ -159,12 +148,10 @@ export default {
   border-radius: 50%;
   width: 30px;
   height: 30px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
 }
 
 .btn-remove i {
@@ -172,31 +159,22 @@ export default {
   font-size: 1.3rem;
 }
 
-.btn-remove:hover {
-  transform: scale(1.1);
-}
-
 .upload-btn {
   width: 150px;
   height: 150px;
-  border: 2px solid #e0e0e0;
+  border: 2px dashed #d0d0d0;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-color: white;
+  background-color: #fff;
 }
 
 .upload-btn:hover {
   border-color: #1a7a7a;
   background-color: #f8fafa;
-}
-
-.upload-btn.has-images {
-  width: 150px;
-  height: 150px;
 }
 
 .file-input {

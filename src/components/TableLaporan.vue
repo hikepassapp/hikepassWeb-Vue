@@ -119,7 +119,7 @@
 
         <div class="form-group">
           <label>Tanggal Kejadian</label>
-          <input v-model="editForm.tanggal_kejadian" type="date" required />
+          <input v-model="editForm.tanggal_kejadian" type="date" required :max="today" />
         </div>
 
         <div class="form-group">
@@ -182,6 +182,12 @@ export default {
         foto: null,
         foto_preview: null
       }
+    }
+  },
+
+  computed: {
+    today() {
+      return new Date().toISOString().slice(0, 10)
     }
   },
 
@@ -253,7 +259,7 @@ export default {
         this.$emit('refresh')
       } catch (error) {
         console.error(error)
-         this.$emit('edit-failed', 'Gagal memperbarui laporan')
+        this.$emit('edit-failed', 'Gagal memperbarui laporan')
       }
     },
 
