@@ -135,6 +135,15 @@
       @close="showModalTambahAdmin = false" 
       @submit="handleSubmitAdmin" 
     />
+
+    <!-- Modal Feedback -->
+    <ModalFeedback
+      :show="feedback.show"
+      :type="feedback.type"
+      :title="feedback.title"
+      :message="feedback.message"
+      @close="closeFeedback"
+    />
   </div>
 </template>
 
@@ -150,6 +159,7 @@ import ModalTambahUser from '../components/ModalTambahUser.vue'
 import ModalTambahAdmin from '../components/ModalTambahAdmin.vue'
 import ModalEditUser from '../components/ModalEditUser.vue'
 import ModalEditAdmin from '../components/ModalEditAdmin.vue'
+import ModalFeedback from '../components/ModalFeedback.vue'
 
 // 2. Import API Client
 import apiClient from '../api/index.js'
@@ -158,7 +168,8 @@ export default {
   name: 'UserView',
   components: {
     Sidebar, Navbar, TabNavigation, TableUser, TableAdmin,
-    Pagination, ModalTambahUser, ModalTambahAdmin, ModalEditUser, ModalEditAdmin
+    Pagination, ModalTambahUser, ModalTambahAdmin, ModalEditUser, ModalEditAdmin,
+    ModalFeedback
   },
   data() {
     return {
@@ -180,7 +191,13 @@ export default {
         { id: 'admin', label: 'Admin' }
       ],
       users: [],
-      admins: []
+      admins: [],
+      feedback: {
+        show: false,
+        type: 'success',
+        title: '',
+        message: ''
+      }
     }
   },
   computed: {
@@ -222,6 +239,19 @@ export default {
     this.fetchData();
   },
   methods: {
+    // FEEDBACK METHODS
+    showFeedback(type, title, message) {
+      this.feedback = {
+        show: true,
+        type,
+        title,
+        message
+      };
+    },
+    closeFeedback() {
+      this.feedback.show = false;
+    },
+
     // FETCH DATA
     async fetchData() {
       try {
@@ -258,7 +288,7 @@ export default {
           role: 'customer'
         });
         this.showModalTambahUser = false;
-        alert('User berhasil ditambahkan!');
+        this.showFeedback('success', 'Berhasil!', 'User berhasil ditambahkan!');
         this.fetchData();
       } catch (error) {
         this.handleError(error, "Gagal menambah user");
@@ -276,7 +306,7 @@ export default {
           role: 'admin'
         });
         this.showModalTambahAdmin = false;
-        alert('Admin berhasil ditambahkan!');
+        this.showFeedback('success', 'Berhasil!', 'Admin berhasil ditambahkan!');
         this.fetchData();
       } catch (error) {
         this.handleError(error, "Gagal menambah admin");
@@ -311,7 +341,7 @@ export default {
         await apiClient.put(`/users/${updatedData.id}`, payload);
         
         this.showModalEditUser = false;
-        alert('Data user berhasil diperbarui!');
+        this.showFeedback('success', 'Berhasil!', 'Data user berhasil diperbarui!');
         this.fetchData();
       } catch (error) {
         this.handleError(error, "Gagal memperbarui data user");
@@ -335,7 +365,7 @@ export default {
         await apiClient.put(`/users/${updatedData.id}`, payload);
         
         this.showModalEditAdmin = false;
-        alert('Data admin berhasil diperbarui!');
+        this.showFeedback('success', 'Berhasil!', 'Data admin berhasil diperbarui!');
         this.fetchData();
       } catch (error) {
         this.handleError(error, "Gagal memperbarui data admin");
@@ -366,8 +396,8 @@ export default {
     async confirmDelete() {
       try {
         await apiClient.delete(`/users/${this.itemToDelete.id}`);
-        alert(`${this.itemToDelete.label} berhasil dihapus!`);
         this.showDeleteModal = false;
+        this.showFeedback('success', 'Berhasil!', `${this.itemToDelete.label} berhasil dihapus!`);
         this.fetchData();
       } catch (error) {
         this.handleError(error, `Gagal menghapus ${this.itemToDelete.label}`);
@@ -385,7 +415,7 @@ export default {
       if (error.response?.status === 401) {
         this.$router.push('/login');
       } else {
-        alert(msg);
+        this.showFeedback('error', 'Terjadi Kesalahan', msg);
       }
     },
     changeTab(tabId) {
