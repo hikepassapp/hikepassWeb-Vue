@@ -64,12 +64,16 @@
 
           <div class="form-group">
             <label>Gambar <span class="required">*</span></label>
-            <input type="file" @change="handleFileChange" class="form-control" accept="image/*"
+            <input ref="fileInput" type="file" @change="handleFileChange" class="form-control" accept="image/*"
               :required="!isEditMode" />
+
             <small class="form-text">Format: JPG, PNG, JPEG (Max: 2MB)</small>
 
             <!-- Preview Image -->
             <div v-if="imagePreview" class="image-preview">
+              <button type="button" class="btn-remove-image" @click="removeImage" title="Hapus gambar">
+                <i class="bi bi-x-lg"></i>
+              </button>
               <img :src="imagePreview" alt="Preview" />
             </div>
           </div>
@@ -182,7 +186,6 @@ export default {
         gambar: null
       };
 
-      // Set preview image for edit mode
       if (info.gambar) {
         if (info.gambar.startsWith('http')) {
           this.imagePreview = info.gambar;
@@ -197,14 +200,14 @@ export default {
     handleFileChange(event) {
       const file = event.target.files[0];
       if (file) {
-        // Validate file size (2MB)
+        // Validasi ukuran file (2MB)
         if (file.size > 2 * 1024 * 1024) {
           this.showNotification('Ukuran file maksimal 2MB', 'error');
           event.target.value = '';
           return;
         }
 
-        // Validate file type
+        // Validasi tipe file
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!validTypes.includes(file.type)) {
           this.showNotification('Format file harus JPG, JPEG, atau PNG', 'error');
@@ -214,7 +217,6 @@ export default {
 
         this.form.gambar = file;
 
-        // Create preview
         const reader = new FileReader();
         reader.onload = (e) => {
           this.imagePreview = e.target.result;
@@ -306,6 +308,15 @@ export default {
       };
       this.imagePreview = null;
       this.selectedInfo = null;
+    },
+
+    removeImage() {
+      this.imagePreview = null
+      this.form.gambar = null
+
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = ''
+      }
     },
 
     showNotification(message, type = 'success') {
@@ -567,16 +578,34 @@ textarea.form-control {
 }
 
 .image-preview {
+  position: relative;
   margin-top: 1rem;
   border-radius: 8px;
   overflow: hidden;
   max-width: 300px;
 }
 
-.image-preview img {
-  width: 100%;
-  height: auto;
-  display: block;
+.btn-remove-image {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-image:hover {
+  background: #ef4444;
+  transform: scale(1.1);
 }
 
 .form-actions {
