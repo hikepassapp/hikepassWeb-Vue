@@ -92,6 +92,7 @@ export function useReservationPage() {
   const showCheckinModal = ref(false);
   const showCheckoutModal = ref(false);
   const showHistoryDetailModal = ref(false);
+  const showStatusModal = ref(false);
 
   const isEditMode = ref(false);
   const selectedReservation = ref(null);
@@ -101,6 +102,12 @@ export function useReservationPage() {
   const deleteReservationId = ref(null);
   const formErrors = ref({});
   const notification = ref(null);
+  
+  const statusModal = ref({
+    type: 'success', // 'success', 'error', 'warning'
+    title: 'Sukses',
+    message: 'Operasi berhasil dilakukan'
+  });
 
   // Computed
   const sectionTitle = computed(() => {
@@ -196,6 +203,10 @@ export function useReservationPage() {
 
     if (result.success) {
       closeFormModal();
+      showSuccessModal(
+        payload.isEdit ? 'Edit Reservasi Berhasil' : 'Tambah Reservasi Berhasil',
+        payload.isEdit ? 'Reservasi berhasil diperbarui.' : 'Reservasi berhasil ditambahkan.'
+      );
       return { success: true };
     } else {
       if (result.errors) {
@@ -210,6 +221,7 @@ export function useReservationPage() {
 
     if (result.success) {
       closeDeleteModal();
+      showSuccessModal('Hapus Reservasi Berhasil', 'Reservasi berhasil dihapus.');
       return { success: true };
     }
     return { success: false, message: result.message };
@@ -234,6 +246,7 @@ export function useReservationPage() {
       closeCheckinModal();
       activeTab.value = 'checkin';
       await reservationState.fetchReservations(); // Refresh reservation list
+      showSuccessModal('Check-in Berhasil', 'Data check-in berhasil disimpan.');
       return { success: true };
     }
     return { success: false, message: result.message, errors: result.errors };
@@ -263,6 +276,7 @@ export function useReservationPage() {
       closeCheckoutModal();
       activeTab.value = 'checkout';
       await checkinState.fetchCheckIns(); // Refresh checkin list
+      showSuccessModal('Check-out Berhasil', 'Data check-out berhasil disimpan.');
       return { success: true };
     }
     return { success: false, message: result.message, errors: result.errors };
@@ -285,10 +299,43 @@ export function useReservationPage() {
         checkoutState.fetchCheckOuts(),
         historyState.fetchHistories()
       ]);
+      showSuccessModal('Pendakian Selesai', 'Data pendakian berhasil disimpan ke riwayat.');
       return { success: true };
     }
 
     return { success: false, message: result.message };
+  };
+
+  // Status Modal Methods
+  const showSuccessModal = (title, message) => {
+    statusModal.value = {
+      type: 'success',
+      title: title,
+      message: message
+    };
+    showStatusModal.value = true;
+  };
+
+  const showErrorModal = (title, message) => {
+    statusModal.value = {
+      type: 'error',
+      title: title,
+      message: message
+    };
+    showStatusModal.value = true;
+  };
+
+  const showWarningModal = (title, message) => {
+    statusModal.value = {
+      type: 'warning',
+      title: title,
+      message: message
+    };
+    showStatusModal.value = true;
+  };
+
+  const closeStatusModal = () => {
+    showStatusModal.value = false;
   };
 
   // Methods - History Handlers
@@ -337,6 +384,7 @@ export function useReservationPage() {
     showCheckinModal,
     showCheckoutModal,
     showHistoryDetailModal,
+    showStatusModal,
     isEditMode,
     selectedReservation,
     selectedCheckinReservation,
@@ -345,6 +393,7 @@ export function useReservationPage() {
     deleteReservationId,
     formErrors,
     notification,
+    statusModal,
 
     // Methods
     changePage,
@@ -377,6 +426,12 @@ export function useReservationPage() {
 
     // History
     openHistoryDetailModal,
-    closeHistoryDetailModal
+    closeHistoryDetailModal,
+
+    // Status Modal
+    showSuccessModal,
+    showErrorModal,
+    showWarningModal,
+    closeStatusModal
   };
 }
