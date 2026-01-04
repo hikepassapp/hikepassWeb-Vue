@@ -4,10 +4,12 @@
       {{ label }}
       <span v-if="required" class="text-danger">*</span>
     </label>
+
     <input
       :id="id"
       type="date"
       :value="modelValue"
+      :max="today"
       @input="$emit('update:modelValue', $event.target.value)"
       :required="required"
       class="form-control custom-date-input"
@@ -34,6 +36,15 @@ export default {
     required: {
       type: Boolean,
       default: false
+    }
+  },
+  computed: {
+    today() {
+      const now = new Date()
+      const yyyy = now.getFullYear()
+      const mm = String(now.getMonth() + 1).padStart(2, '0')
+      const dd = String(now.getDate()).padStart(2, '0')
+      return `${yyyy}-${mm}-${dd}`
     }
   },
   emits: ['update:modelValue']

@@ -99,7 +99,7 @@ export default {
     }
   },
   mounted() {
-    // Cek apakah mode edit
+    // Mengecek apakah mode edit
     if (this.$route.params.id) {
       this.isEdit = true
       this.editId = this.$route.params.id
@@ -150,14 +150,12 @@ export default {
       this.isLoading = true
 
       try {
-        // Prepare FormData
         const formData = new FormData()
         formData.append('nama_pelapor', this.formData.nama_pelapor)
         formData.append('tanggal_kejadian', this.formData.tanggal_kejadian)
         formData.append('lokasi_kejadian', this.formData.lokasi_kejadian)
         formData.append('deskripsi_kejadian', this.formData.deskripsi_kejadian)
 
-        // Tambahkan foto jika ada
         if (this.files.length > 0) {
           formData.append('foto_bukti', this.files[0])
         }
