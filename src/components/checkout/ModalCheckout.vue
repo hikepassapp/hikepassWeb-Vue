@@ -15,11 +15,14 @@
             id="checkoutDate" 
             type="date" 
             v-model="form.checkout_date"
+            @change="validateCheckoutDate"
+            :min="minCheckoutDate"
             class="form-control"
-            :class="{ 'is-invalid': errors.checkout_date }"
+            :class="{ 'is-invalid': validationErrors.checkout_date }"
             required
           />
-          <span v-if="errors.checkout_date" class="error-text">{{ errors.checkout_date[0] }}</span>
+          <span v-if="validationErrors.checkout_date" class="error-text">{{ validationErrors.checkout_date }}</span>
+          <span v-else-if="formattedCheckinDate" class="helper-text">Check-out dapat dilakukan setelah {{ formattedCheckinDate }}.</span>
         </div>
 
         <!-- Barang Bawaan -->
@@ -29,12 +32,12 @@
             id="items" 
             v-model="form.item_list"
             class="form-control"
-            :class="{ 'is-invalid': errors.item_list }"
+            :class="{ 'is-invalid': validationErrors.item_list }"
             placeholder="Masukkan daftar barang bawaan"
             rows="4"
             required
           ></textarea>
-          <span v-if="errors.item_list" class="error-text">{{ errors.item_list[0] }}</span>
+          <span v-if="validationErrors.item_list" class="error-text">{{ validationErrors.item_list }}</span>
         </div>
 
         <!-- Form Actions -->
@@ -72,20 +75,126 @@ export default {
         checkout_date: '',
         item_list: ''
       },
+      validationErrors: {},
       errors: {},
       isSubmitting: false
+    }
+  },
+  computed: {
+    minCheckoutDate() {
+      if (this.checkin?.checkin_date) {
+        return this.getNextDate(this.checkin.checkin_date)
+      }
+      return new Date().toISOString().split('T')[0]
+    },
+    formattedCheckinDate() {
+      const checkinDate = this.formatDateForInput(this.checkin?.checkin_date)
+      return checkinDate ? this.formatDate(checkinDate) : ''
     }
   },
   watch: {
     isOpen(newVal) {
       if (newVal && this.checkin) {
         this.form.id_checkin = this.checkin.id
+        this.validationErrors = {}
       }
     }
   },
   methods: {
+    validateCheckoutDate() {
+      if (!this.form.checkout_date) {
+        this.validationErrors.checkout_date = 'Tanggal check-out wajib diisi'
+        return
+      }
+      
+      // checkout_date harus > checkin_date (tidak boleh sama)
+      const checkinDate = this.formatDateForInput(this.checkin?.checkin_date)
+      if (checkinDate && !this.isAfterDate(this.form.checkout_date, checkinDate)) {
+        this.validationErrors.checkout_date = `Check-out dapat dilakukan setelah ${this.formatDate(checkinDate)}`
+        return
+      }
+      
+      delete this.validationErrors.checkout_date
+    },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      if (isNaN(date)) return '-'
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    },
+    formatDateForInput(dateValue) {
+      if (!dateValue) return ''
+
+      if (typeof dateValue === 'string') {
+        const parts = dateValue.split(/[^0-9]/).filter(Boolean)
+        if (parts.length === 3) {
+          let year, month, day
+          if (parts[0].length === 4) {
+            ;[year, month, day] = parts
+          } else {
+            ;[day, month, year] = parts
+          }
+          if (year && month && day) {
+            return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+          }
+        }
+      }
+
+      const parsed = new Date(dateValue)
+      if (!isNaN(parsed)) {
+        return parsed.toISOString().split('T')[0]
+      }
+      return ''
+    },
+    isAfterDate(value, minValue) {
+      const valueDate = this.toDateOnly(value)
+      const minDate = this.toDateOnly(minValue)
+      if (!valueDate || !minDate) return false
+      return valueDate > minDate
+    },
+    toDateOnly(value) {
+      const normalized = this.formatDateForInput(value)
+      if (!normalized) return null
+      const [year, month, day] = normalized.split('-').map(Number)
+      if (!year || !month || !day) return null
+      return new Date(Date.UTC(year, month - 1, day))
+    },
+    getNextDate(value) {
+      const base = this.toDateOnly(value)
+      if (!base) return ''
+      const next = new Date(base)
+      next.setUTCDate(next.getUTCDate() + 1)
+      return next.toISOString().split('T')[0]
+    },
+    validateAllFields() {
+      this.validationErrors = {}
+      
+      if (!this.form.checkout_date) {
+        this.validationErrors.checkout_date = 'Tanggal check-out wajib diisi'
+      } else {
+        const checkinDate = this.formatDateForInput(this.checkin?.checkin_date)
+        if (checkinDate && !this.isAfterDate(this.form.checkout_date, checkinDate)) {
+          this.validationErrors.checkout_date = `Check-out dapat dilakukan setelah ${this.formatDate(checkinDate)}`
+        }
+      }
+      
+      if (!this.form.item_list || !this.form.item_list.trim()) {
+        this.validationErrors.item_list = 'Barang bawaan check-out wajib diisi'
+      }
+      
+      return Object.keys(this.validationErrors).length === 0
+    },
     async handleSubmit() {
       this.errors = {}
+      
+      // Validate all fields before submission
+      if (!this.validateAllFields()) {
+        return
+      }
+      
       this.isSubmitting = true
 
       try {
@@ -101,6 +210,7 @@ export default {
     },
     closeModal() {
       this.errors = {}
+      this.validationErrors = {}
       this.form = {
         id_checkin: null,
         checkout_date: '',
@@ -224,6 +334,12 @@ textarea.form-control {
 
 .error-text {
   color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.helper-text {
+  color: #6c757d;
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }

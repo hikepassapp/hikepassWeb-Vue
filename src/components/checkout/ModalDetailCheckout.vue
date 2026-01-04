@@ -76,7 +76,7 @@
 
         <div class="modal-actions">
           <button type="button" class="btn-cancel" @click="closeModal">
-            Batal
+            Tutup
           </button>
           <button type="button" class="btn-finish" @click="handleFinish">
             Selesai

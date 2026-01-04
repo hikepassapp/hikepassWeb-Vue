@@ -151,14 +151,16 @@
       @close="closeHistoryDetailModal"
     />
     
-    <!-- Notification System (if available) -->
-    <div v-if="notification" class="notification" :class="notification.type">
-      {{ notification.message }}
-    </div>
+    <!-- Status Modal -->
+    <StatusModal
+      :isOpen="showStatusModal"
+      :type="statusModal.type"
+      :title="statusModal.title"
+      :message="statusModal.message"
+      @close="closeStatusModal"
+    />
   </div>
 </template>
-
-
 
 <script>
 import Sidebar from '../../components/Sidebar.vue'
@@ -177,6 +179,7 @@ import ModalDetailCheckin from '../../components/checkin/ModalDetailCheckin.vue'
 import ModalCheckout from '../../components/checkout/ModalCheckout.vue'
 import ModalDetailCheckout from '../../components/checkout/ModalDetailCheckout.vue'
 import ModalDetailHistory from '../../components/history/ModalDetailHistory.vue'
+import StatusModal from '../../components/common/StatusModal.vue'
 import { useReservationPage } from './useReservationPage'
 
 export default {
@@ -197,7 +200,8 @@ export default {
     ModalDetailCheckin,
     ModalCheckout,
     ModalDetailCheckout,
-    ModalDetailHistory
+    ModalDetailHistory,
+    StatusModal
   },
   setup() {
     const pageState = useReservationPage();

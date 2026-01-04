@@ -19,9 +19,17 @@
           <p>Memuat data...</p>
         </div>
 
-        <TableLaporan v-else :reports="laporans" @refresh="fetchLaporans" @delete-report="handleDelete" />
+        <TableLaporan :reports="laporans" @refresh="fetchLaporans" @delete-report="requestDelete"
+          @edit-success="handleEditSuccess" @edit-failed="handleEditFailed" />
       </div>
     </div>
+
+    <ModalDeleteGunung :show="showDeleteModal" title="Konfirmasi Hapus Laporan"
+      message="Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan."
+      @cancel="cancelDelete" @confirm="confirmDelete" />
+
+    <ModalFeedbackGunung :show="showFeedbackModal" :message="feedbackMessage" :type="feedbackType"
+      @close="closeFeedbackModal" />
   </div>
 </template>
 
@@ -30,6 +38,8 @@ import axios from 'axios'
 import Sidebar from '../components/Sidebar.vue'
 import Navbar from '../components/Navbar.vue'
 import TableLaporan from '../components/TableLaporan.vue'
+import ModalFeedbackGunung from '../components/dataGunung/ModalFeedbackGunung.vue'
+import ModalDeleteGunung from '../components/dataGunung/ModalDeleteGunung.vue'
 
 const API_URL = 'http://localhost:8000/api/laporans'
 
@@ -38,12 +48,21 @@ export default {
   components: {
     Sidebar,
     Navbar,
-    TableLaporan
+    TableLaporan,
+    ModalFeedbackGunung,
+    ModalDeleteGunung
   },
   data() {
     return {
       laporans: [],
-      isLoading: false
+      isLoading: false,
+
+      showFeedbackModal: false,
+      feedbackMessage: '',
+      feedbackType: 'success',
+
+      showDeleteModal: false,
+      laporanToDelete: null
     }
   },
   mounted() {
@@ -54,12 +73,20 @@ export default {
       this.isLoading = true
       try {
         const response = await axios.get(API_URL)
-        if (response.data.success) {
-          this.laporans = response.data.data
+        if (response.data && response.data.success) {
+          this.laporans = response.data.data || []
+        } else {
+          this.laporans = []
+          this.feedbackMessage = response.data?.message || 'Gagal memuat data laporan'
+          this.feedbackType = 'error'
+          this.showFeedbackModal = true
         }
       } catch (error) {
         console.error('Error fetching laporans:', error)
-        alert('Gagal memuat data laporan')
+        this.feedbackMessage =
+          'Gagal memuat data laporan: ' + (error.response?.data?.message || error.message)
+        this.feedbackType = 'error'
+        this.showFeedbackModal = true
       } finally {
         this.isLoading = false
       }
@@ -69,17 +96,73 @@ export default {
       this.$router.push('/laporan/buat')
     },
 
-    async handleDelete(id) {
+    requestDelete(laporan) {
+      if (!laporan || !laporan.id) {
+        this.feedbackMessage = 'Data laporan tidak valid untuk dihapus'
+        this.feedbackType = 'error'
+        this.showFeedbackModal = true
+        return
+      }
+      this.laporanToDelete = laporan
+      this.showDeleteModal = true
+    },
+
+    cancelDelete() {
+      this.showDeleteModal = false
+      this.laporanToDelete = null
+    },
+
+    async confirmDelete() {
+      if (!this.laporanToDelete || !this.laporanToDelete.id) {
+        this.feedbackMessage = 'Tidak ada laporan yang dipilih untuk dihapus'
+        this.feedbackType = 'error'
+        this.showFeedbackModal = true
+        this.showDeleteModal = false
+        return
+      }
+
       try {
-        const response = await axios.delete(`${API_URL}/${id}`)
-        if (response.data.success) {
-          alert(response.data.message)
-          this.fetchLaporans() // Refresh data
+        const response = await axios.delete(`${API_URL}/${this.laporanToDelete.id}`)
+
+        if (response.data && response.data.success) {
+          await this.fetchLaporans()
+
+          this.feedbackMessage = response.data.message || 'Laporan berhasil dihapus!'
+          this.feedbackType = 'success'
+          this.showFeedbackModal = true
+        } else {
+          this.feedbackMessage = response.data?.message || 'Gagal menghapus laporan'
+          this.feedbackType = 'error'
+          this.showFeedbackModal = true
         }
       } catch (error) {
         console.error('Error deleting laporan:', error)
-        alert('Gagal menghapus laporan')
+        this.feedbackMessage =
+          'Gagal menghapus laporan: ' + (error.response?.data?.message || error.message)
+        this.feedbackType = 'error'
+        this.showFeedbackModal = true
+      } finally {
+        this.showDeleteModal = false
+        this.laporanToDelete = null
       }
+    },
+
+    closeFeedbackModal() {
+      this.showFeedbackModal = false
+      this.feedbackMessage = ''
+      this.feedbackType = 'success'
+    },
+
+    handleEditSuccess(message) {
+      this.feedbackMessage = message
+      this.feedbackType = 'success'
+      this.showFeedbackModal = true
+    },
+
+    handleEditFailed(message) {
+      this.feedbackMessage = message
+      this.feedbackType = 'error'
+      this.showFeedbackModal = true
     }
   }
 }
