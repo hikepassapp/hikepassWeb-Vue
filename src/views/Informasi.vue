@@ -26,13 +26,8 @@
 
         <!-- Cards Grid -->
         <div v-else-if="informasiData.length > 0" class="cards-grid">
-          <InformasiCard 
-            v-for="info in informasiData" 
-            :key="info.id"
-            :info="info"
-            @edit="editInformasi"
-            @delete="confirmDelete"
-          />
+          <InformasiCard v-for="info in informasiData" :key="info.id" :info="info" @edit="editInformasi"
+            @delete="confirmDelete" />
         </div>
 
         <!-- Empty State -->
@@ -53,41 +48,26 @@
           <i class="bi bi-x-lg"></i>
         </button>
         <h3 class="modal-title">{{ isEditMode ? 'Edit Informasi' : 'Tambah Informasi' }}</h3>
-        
+
         <form @submit.prevent="saveInformasi" class="form-content">
           <div class="form-group">
             <label>Judul <span class="required">*</span></label>
-            <input 
-              type="text" 
-              v-model="form.judul" 
-              class="form-control"
-              placeholder="Masukkan judul informasi"
-              required
-            />
+            <input type="text" v-model="form.judul" class="form-control" placeholder="Masukkan judul informasi"
+              required />
           </div>
 
           <div class="form-group">
             <label>Deskripsi <span class="required">*</span></label>
-            <textarea 
-              v-model="form.deskripsi" 
-              class="form-control"
-              rows="5"
-              placeholder="Masukkan deskripsi informasi"
-              required
-            ></textarea>
+            <textarea v-model="form.deskripsi" class="form-control" rows="5" placeholder="Masukkan deskripsi informasi"
+              required></textarea>
           </div>
 
           <div class="form-group">
             <label>Gambar <span class="required">*</span></label>
-            <input 
-              type="file" 
-              @change="handleFileChange"
-              class="form-control"
-              accept="image/*"
-              :required="!isEditMode"
-            />
+            <input type="file" @change="handleFileChange" class="form-control" accept="image/*"
+              :required="!isEditMode" />
             <small class="form-text">Format: JPG, PNG, JPEG (Max: 2MB)</small>
-            
+
             <!-- Preview Image -->
             <div v-if="imagePreview" class="image-preview">
               <img :src="imagePreview" alt="Preview" />
@@ -126,6 +106,8 @@
       </div>
     </div>
   </div>
+  <ModalFeedbackGunung :show="showFeedbackModal" :message="feedbackMessage" :type="feedbackType"
+    @close="closeFeedbackModal" />
 </template>
 
 <script>
@@ -133,6 +115,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar.vue';
 import Navbar from '../components/Navbar.vue';
 import InformasiCard from '../components/InformasiCard.vue';
+import ModalFeedbackGunung from '../components/dataGunung/ModalFeedbackGunung.vue'
 
 const API_URL = 'http://localhost:8000/api/informasi';
 
@@ -141,7 +124,8 @@ export default {
   components: {
     Sidebar,
     Navbar,
-    InformasiCard
+    InformasiCard,
+    ModalFeedbackGunung
   },
   data() {
     return {
@@ -159,7 +143,11 @@ export default {
         judul: '',
         deskripsi: '',
         gambar: null
-      }
+      },
+      showFeedbackModal: false,
+      feedbackMessage: '',
+      feedbackType: 'success',
+
     }
   },
   mounted() {
@@ -193,7 +181,7 @@ export default {
         deskripsi: info.deskripsi,
         gambar: null
       };
-      
+
       // Set preview image for edit mode
       if (info.gambar) {
         if (info.gambar.startsWith('http')) {
@@ -202,7 +190,7 @@ export default {
           this.imagePreview = `http://localhost:8000/storage/${info.gambar}`;
         }
       }
-      
+
       this.showModal = true;
     },
 
@@ -237,12 +225,12 @@ export default {
 
     async saveInformasi() {
       this.saving = true;
-      
+
       try {
         const formData = new FormData();
         formData.append('judul', this.form.judul);
         formData.append('deskripsi', this.form.deskripsi);
-        
+
         if (this.form.gambar) {
           formData.append('gambar', this.form.gambar);
         }
@@ -269,7 +257,7 @@ export default {
           this.isEditMode ? 'Informasi berhasil diperbarui!' : 'Informasi berhasil ditambahkan!',
           'success'
         );
-        
+
         this.closeModal();
         this.fetchInformasi();
       } catch (error) {
@@ -290,7 +278,7 @@ export default {
 
     async deleteInformasi() {
       this.deleting = true;
-      
+
       try {
         await axios.delete(`${API_URL}/${this.deleteId}`);
         this.showNotification('Informasi berhasil dihapus!', 'success');
@@ -321,8 +309,15 @@ export default {
     },
 
     showNotification(message, type = 'success') {
-      // Simple alert, you can replace with toast notification
-      alert(message);
+      this.feedbackMessage = message
+      this.feedbackType = type
+      this.showFeedbackModal = true
+    },
+
+    closeFeedbackModal() {
+      this.showFeedbackModal = false
+      this.feedbackMessage = ''
+      this.feedbackType = 'success'
     }
   }
 }
@@ -396,8 +391,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Cards Grid Layout */
