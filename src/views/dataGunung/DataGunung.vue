@@ -23,58 +23,28 @@
           </div>
           <div class="search-box">
             <span>Search:</span>
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              class="form-control"
-              placeholder="Cari gunung..."
-            />
+            <input type="text" v-model="searchQuery" class="form-control" placeholder="Cari gunung..." />
           </div>
         </div>
         <div class="mountains-grid">
-          <MountainCard 
-            v-for="mountain in paginatedMountains" 
-            :key="mountain.id"
-            :mountain="mountain"
-            @edit="editMountain"
-            @delete="deleteMountain"
-          />
+          <MountainCard v-for="mountain in paginatedMountains" :key="mountain.id" :mountain="mountain"
+            @edit="editMountain" @delete="deleteMountain" />
         </div>
-        <Pagination 
-          :currentPage="currentPage"
-          :totalPages="totalPages"
-          @page-change="changePage"
-        />
+        <Pagination :currentPage="currentPage" :totalPages="totalPages" @page-change="changePage" />
       </div>
     </div>
 
     <!-- Modal Components -->
-    <ModalEditGunung 
-      :show="showEditModal"
-      :mountain="selectedMountain"
-      @close="closeEditModal"
-      @save="saveMountain"
-    />
+    <ModalEditGunung :show="showEditModal" :mountain="selectedMountain" @close="closeEditModal" @save="saveMountain" />
 
-    <ModalAddGunung 
-      ref="modalAddGunung"
-      :show="showAddModal"
-      @close="closeAddModal"
-      @save="saveNewMountain"
-    />
+    <ModalAddGunung ref="modalAddGunung" :show="showAddModal" @close="closeAddModal" @save="saveNewMountain" />
 
-    <ModalDeleteGunung 
-      :show="showDeleteModal"
-      @cancel="cancelDelete"
-      @confirm="confirmDelete"
-    />
+    <ModalDeleteGunung :show="showDeleteModal" title="Konfirmasi Hapus Gunung"
+      message="Apakah Anda yakin ingin menghapus data gunung ini? Tindakan ini tidak dapat dibatalkan."
+      @cancel="cancelDelete" @confirm="confirmDelete" />
 
-    <ModalFeedbackGunung 
-      :show="showFeedbackModal"
-      :message="feedbackMessage"
-      :type="feedbackType"
-      @close="closeFeedbackModal"
-    />
+    <ModalFeedbackGunung :show="showFeedbackModal" :message="feedbackMessage" :type="feedbackType"
+      @close="closeFeedbackModal" />
   </div>
 </template>
 

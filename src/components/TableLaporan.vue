@@ -41,7 +41,7 @@
                 <button class="btn-action btn-edit" @click="editReport(laporan)" title="Edit">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn-action btn-delete" @click="deleteReport(laporan.id)" title="Hapus">
+                <button class="btn-action btn-delete" @click="deleteReport(laporan)" title="Hapus">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -247,12 +247,13 @@ export default {
           { headers: { 'Content-Type': 'multipart/form-data' } }
         )
 
-        alert('Laporan berhasil diupdate')
         this.closeEditModal()
+
+        this.$emit('edit-success', 'Laporan berhasil diperbarui!')
         this.$emit('refresh')
       } catch (error) {
-        alert('Gagal update laporan')
         console.error(error)
+         this.$emit('edit-failed', 'Gagal memperbarui laporan')
       }
     },
 
@@ -289,10 +290,8 @@ export default {
       this.selectedImage = null
     },
 
-    deleteReport(id) {
-      if (confirm('Apakah Anda yakin ingin menghapus laporan ini?')) {
-        this.$emit('delete-report', id)
-      }
+    deleteReport(laporan) {
+      this.$emit('delete-report', laporan)
     }
   },
   emits: ['refresh', 'delete-report']

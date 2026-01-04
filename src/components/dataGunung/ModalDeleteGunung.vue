@@ -4,8 +4,8 @@
       <div class="modal-icon-warning">
         <i class="bi bi-exclamation-triangle"></i>
       </div>
-      <h3 class="modal-title">Konfirmasi Hapus</h3>
-      <p class="modal-message">Apakah Anda yakin ingin menghapus data gunung ini? Tindakan ini tidak dapat dibatalkan.</p>
+      <h3 class="modal-title">{{ title }}</h3>
+      <p class="modal-message">{{ message }}</p>
       <div class="form-actions">
         <button class="btn-cancel" @click="$emit('cancel')">
           Batal
@@ -26,6 +26,14 @@ export default {
     show: {
       type: Boolean,
       default: false
+    },
+    title: {
+      type: String,
+      default: 'Konfirmasi Hapus'
+    },
+    message: {
+      type: String,
+      default: ''
     }
   }
 }
