@@ -98,21 +98,6 @@
                 </p>
               </div>
 
-              <!-- Penulis -->
-              <div class="form-group">
-                <label class="form-label">Penulis/Publisher *</label>
-                <input
-                  v-model="form.penulis"
-                  type="text"
-                  class="form-input"
-                  placeholder="Nama penulis"
-                  :class="{ error: errors.penulis }"
-                />
-                <p v-if="errors.penulis" class="error-message">
-                  {{ errors.penulis }}
-                </p>
-              </div>
-
               <!-- Jenis -->
               <div class="form-group">
                 <label class="form-label">Jenis Trip *</label>
@@ -294,7 +279,6 @@ export default {
 
     const form = ref({
       judul: "",
-      penulis: "",
       jenis: "",
       tanggal: "",
       biaya: "",
@@ -332,7 +316,6 @@ export default {
         const item = response.data.data;
         form.value = {
           judul: item.judul,
-          penulis: item.penulis,
           jenis: item.jenis,
           tanggal: formatDateForInput(item.tanggal),
           biaya: item.biaya,
@@ -402,11 +385,6 @@ export default {
         isValid = false;
       }
 
-      if (!form.value.penulis) {
-        errors.value.penulis = "Penulis harus diisi";
-        isValid = false;
-      }
-
       if (!form.value.jenis) {
         errors.value.jenis = "Jenis trip harus dipilih";
         isValid = false;
@@ -460,7 +438,6 @@ export default {
       try {
         const formData = new FormData();
         formData.append("judul", form.value.judul);
-        formData.append("penulis", form.value.penulis);
         formData.append("jenis", form.value.jenis);
         formData.append("tanggal", form.value.tanggal);
         formData.append("biaya", form.value.biaya);
