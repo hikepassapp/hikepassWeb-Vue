@@ -26,7 +26,6 @@ export function usePaketWisata() {
         guide: item.guide,
         harga: item.biaya,
         deskripsi: item.deskripsi,
-        rating: item.rating,
         penulis: item.penulis,
         titikKumpul: item.titik_kumpul,
         waktu: item.waktu

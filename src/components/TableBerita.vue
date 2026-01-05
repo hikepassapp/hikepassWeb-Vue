@@ -18,8 +18,8 @@
             <td>{{ startIndex + index + 1 }}</td>
             <td>
               <div class="image-cell">
-                <img 
-                  :src="berita.gambar" 
+                <img
+                  :src="berita.gambar"
                   :alt="berita.judul"
                   class="berita-image"
                   @click="$emit('view-image', berita.gambar)"
@@ -41,14 +41,14 @@
             <td>{{ berita.penulis }}</td>
             <td>
               <div class="action-buttons">
-                <button 
+                <button
                   class="btn-action btn-detail"
                   @click="$emit('view-detail', berita)"
                   title="Lihat Detail"
                 >
-                  <i class="bi bi-arrow-right"></i>
+                  <i class="bi bi-eye"></i>
                 </button>
-                <button 
+                <button
                   class="btn-action btn-delete"
                   @click="$emit('delete-berita', berita.id, berita.judul)"
                   title="Hapus"
@@ -58,7 +58,7 @@
               </div>
             </td>
           </tr>
-          
+
           <!-- Empty State -->
           <tr v-if="beritaList.length === 0">
             <td colspan="7" class="text-center empty-state">
@@ -73,31 +73,31 @@
 </template>
 
 <script>
-import { formatDate } from '@/utils/formatters';
+import { formatDate } from "@/utils/formatters";
 
 export default {
-  name: 'TableBerita',
+  name: "TableBerita",
   props: {
     beritaList: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     startIndex: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   methods: {
     handleImageError(e) {
-      e.target.src = 'https://via.placeholder.com/100x80?text=No+Image';
+      e.target.src = "https://via.placeholder.com/100x80?text=No+Image";
     },
     formatDate,
     jenisClass(jenis) {
-      return jenis.toLowerCase() === 'event' ? 'badge-event' : 'badge-berita';
-    }
+      return jenis.toLowerCase() === "event" ? "badge-event" : "badge-berita";
+    },
   },
-  emits: ['view-detail', 'delete-berita', 'view-image']
-}
+  emits: ["view-detail", "delete-berita", "view-image"],
+};
 </script>
 
 <style scoped>
@@ -255,16 +255,16 @@ export default {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
-  
+
   .image-cell {
     width: 70px;
     height: 60px;
   }
-  
+
   .title-cell {
     max-width: 150px;
   }
-  
+
   .btn-action {
     width: 32px;
     height: 32px;

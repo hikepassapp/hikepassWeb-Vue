@@ -46,7 +46,7 @@
                   @click="$emit('view-detail', wisata)"
                   title="Lihat Detail"
                 >
-                  <i class="bi bi-arrow-right"></i>
+                  <i class="bi bi-eye"></i>
                 </button>
                 <button
                   class="btn-action btn-delete"

@@ -41,10 +41,6 @@
             <span>{{ wisataData.guide }}</span>
           </div>
           <div class="info-item">
-            <strong>Rating:</strong>
-            <span>⭐ {{ wisataData.rating }}/5</span>
-          </div>
-          <div class="info-item">
             <strong>Harga:</strong>
             <span class="price">{{ formatRupiah(wisataData.harga) }}</span>
           </div>

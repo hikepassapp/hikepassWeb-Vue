@@ -144,17 +144,28 @@
             </div>
             <!-- Deskripsi (Full Width) -->
             <div class="form-group">
-              <label class="form-label">Deskripsi Berita & Event *</label>
+              <label class="form-label"
+                >Deskripsi Berita/Event *
+                <span class="label-hint">(minimal 20 karakter)</span>
+              </label>
               <textarea
                 v-model="form.deskripsi"
                 class="form-textarea"
                 rows="6"
-                placeholder="Jelaskan detail berita & event..."
+                placeholder="Jelaskan detail berita/event..."
                 :class="{ error: errors.deskripsi }"
               ></textarea>
-              <p v-if="errors.deskripsi" class="error-message">
-                {{ errors.deskripsi }}
-              </p>
+              <div class="d-flex justify-content-between">
+                <p v-if="errors.deskripsi" class="error-message">
+                  {{ errors.deskripsi }}
+                </p>
+                <span
+                  class="char-count"
+                  :class="{ 'text-danger': form.deskripsi.length < 20 }"
+                >
+                  {{ form.deskripsi.length }}/20
+                </span>
+              </div>
             </div>
 
             <!-- Submit Buttons -->
@@ -215,6 +226,22 @@ export default {
 
     const errors = ref({});
 
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return "";
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
     const loadData = async () => {
       loadingData.value = true;
       loadError.value = null;
@@ -228,10 +255,9 @@ export default {
           judul: item.judul,
           penulis: item.penulis,
           jenis: item.jenis,
-          tanggalPublish: item.tanggalPublish,
+          tanggalPublish: formatDateForInput(item.tanggal_publish),
           deskripsi: item.deskripsi,
         };
-
         currentImage.value = getImageUrl(item.image);
       } catch (err) {
         loadError.value = err.response?.data?.message || "Gagal mengambil data";
@@ -388,7 +414,25 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
 }
+.label-hint {
+  font-size: 12px;
+  color: #666;
+  font-weight: normal;
+}
 
+.char-count {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
 .btn-back {
   background: white;
   border: 1px solid #ddd;

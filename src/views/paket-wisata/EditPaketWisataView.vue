@@ -98,21 +98,6 @@
                 </p>
               </div>
 
-              <!-- Penulis -->
-              <div class="form-group">
-                <label class="form-label">Penulis/Publisher *</label>
-                <input
-                  v-model="form.penulis"
-                  type="text"
-                  class="form-input"
-                  placeholder="Nama penulis"
-                  :class="{ error: errors.penulis }"
-                />
-                <p v-if="errors.penulis" class="error-message">
-                  {{ errors.penulis }}
-                </p>
-              </div>
-
               <!-- Jenis -->
               <div class="form-group">
                 <label class="form-label">Jenis Trip *</label>
@@ -129,21 +114,6 @@
                   {{ errors.jenis }}
                 </p>
               </div>
-
-              <!-- Rating -->
-              <div class="form-group">
-                <label class="form-label">Rating (0-5)</label>
-                <input
-                  v-model.number="form.rating"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  class="form-input"
-                  placeholder="4.5"
-                />
-              </div>
-
               <!-- Tanggal -->
               <div class="form-group">
                 <label class="form-label">Tanggal Trip *</label>
@@ -235,7 +205,10 @@
 
             <!-- Deskripsi (Full Width) -->
             <div class="form-group">
-              <label class="form-label">Deskripsi Paket *</label>
+              <label class="form-label">
+                Deskripsi Paket *
+                <span class="label-hint">(minimal 20 karakter)</span>
+              </label>
               <textarea
                 v-model="form.deskripsi"
                 class="form-textarea"
@@ -243,9 +216,17 @@
                 placeholder="Jelaskan detail paket wisata..."
                 :class="{ error: errors.deskripsi }"
               ></textarea>
-              <p v-if="errors.deskripsi" class="error-message">
-                {{ errors.deskripsi }}
-              </p>
+              <div class="d-flex justify-content-between">
+                <p v-if="errors.deskripsi" class="error-message">
+                  {{ errors.deskripsi }}
+                </p>
+                <span
+                  class="char-count"
+                  :class="{ 'text-danger': form.deskripsi.length < 20 }"
+                >
+                  {{ form.deskripsi.length }}/20
+                </span>
+              </div>
             </div>
 
             <!-- Submit Buttons -->
@@ -298,9 +279,7 @@ export default {
 
     const form = ref({
       judul: "",
-      penulis: "",
       jenis: "",
-      rating: 0,
       tanggal: "",
       biaya: "",
       titikKumpul: "",
@@ -311,7 +290,21 @@ export default {
     });
 
     const errors = ref({});
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return "";
 
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
     const loadData = async () => {
       loadingData.value = true;
       loadError.value = null;
@@ -321,14 +314,10 @@ export default {
           route.params.id
         );
         const item = response.data.data;
-
-        // Populate form
         form.value = {
           judul: item.judul,
-          penulis: item.penulis,
           jenis: item.jenis,
-          rating: item.rating,
-          tanggal: item.tanggal,
+          tanggal: formatDateForInput(item.tanggal),
           biaya: item.biaya,
           titikKumpul: item.titik_kumpul,
           waktu: item.waktu,
@@ -396,11 +385,6 @@ export default {
         isValid = false;
       }
 
-      if (!form.value.penulis) {
-        errors.value.penulis = "Penulis harus diisi";
-        isValid = false;
-      }
-
       if (!form.value.jenis) {
         errors.value.jenis = "Jenis trip harus dipilih";
         isValid = false;
@@ -454,9 +438,7 @@ export default {
       try {
         const formData = new FormData();
         formData.append("judul", form.value.judul);
-        formData.append("penulis", form.value.penulis);
         formData.append("jenis", form.value.jenis);
-        formData.append("rating", form.value.rating);
         formData.append("tanggal", form.value.tanggal);
         formData.append("biaya", form.value.biaya);
         formData.append("titikKumpul", form.value.titikKumpul);
@@ -578,7 +560,25 @@ export default {
 .error-container {
   color: #dc3545;
 }
+.label-hint {
+  font-size: 12px;
+  color: #666;
+  font-weight: normal;
+}
 
+.char-count {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
 .error-container i {
   font-size: 3rem;
 }
