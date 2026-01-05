@@ -43,8 +43,8 @@ export default {
   },
   data() {
     return {
-      selectedYear: 2024,
-      years: [2022, 2023, 2024, 2025],
+      selectedYear: new Date().getFullYear(), // Menggunakan tahun saat ini
+      years: [2025, 2026],
       chart: null
     }
   },
@@ -54,6 +54,17 @@ export default {
   beforeUnmount() {
     if (this.chart) {
       this.chart.destroy()
+    }
+  },
+  watch: {
+    chartData: {
+      deep: true,
+      handler() {
+        if (this.chart) {
+          this.chart.data = this.chartData
+          this.chart.update()
+        }
+      }
     }
   },
   methods: {
