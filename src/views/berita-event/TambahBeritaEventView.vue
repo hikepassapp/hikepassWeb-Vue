@@ -120,7 +120,10 @@
             </div>
             <!-- Deskripsi (Full Width) -->
             <div class="form-group">
-              <label class="form-label">Deskripsi Berita/Event *</label>
+              <label class="form-label"
+                >Deskripsi Berita/Event *
+                <span class="label-hint">(minimal 20 karakter)</span>
+              </label>
               <textarea
                 v-model="form.deskripsi"
                 class="form-textarea"
@@ -128,9 +131,17 @@
                 placeholder="Jelaskan detail berita/event..."
                 :class="{ error: errors.deskripsi }"
               ></textarea>
-              <p v-if="errors.deskripsi" class="error-message">
-                {{ errors.deskripsi }}
-              </p>
+              <div class="d-flex justify-content-between">
+                <p v-if="errors.deskripsi" class="error-message">
+                  {{ errors.deskripsi }}
+                </p>
+                <span
+                  class="char-count"
+                  :class="{ 'text-danger': form.deskripsi.length < 20 }"
+                >
+                  {{ form.deskripsi.length }}/20
+                </span>
+              </div>
             </div>
 
             <!-- Submit Buttons -->
@@ -356,7 +367,25 @@ export default {
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+.label-hint {
+  font-size: 12px;
+  color: #666;
+  font-weight: normal;
+}
 
+.char-count {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
 .form-title {
   font-size: 1.8rem;
   font-weight: 700;

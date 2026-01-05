@@ -32,7 +32,6 @@
             <h1 class="detail-title">{{ wisata.judul }}</h1>
             <div class="detail-meta">
               <span class="badge-jenis">{{ wisata.jenis }}</span>
-              <span class="rating">⭐ {{ wisata.rating }}/5</span>
             </div>
           </div>
 
@@ -189,7 +188,6 @@ export default {
           guide: item.guide,
           harga: item.biaya,
           deskripsi: item.deskripsi,
-          rating: item.rating,
           penulis: item.penulis,
           titikKumpul: item.titik_kumpul,
           waktu: item.waktu,
@@ -307,12 +305,6 @@ export default {
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-}
-
-.rating {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #666;
 }
 
 .detail-image-section {
